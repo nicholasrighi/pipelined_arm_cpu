@@ -1,0 +1,152 @@
+`include "GENERAL_DEFS.svh"
+
+module decode_block(
+                        input logic             clk_i,
+                        input logic             reset_i,
+                        input logic             reg_file_write_en_i,
+                        input instruction       instruction_i,
+                        input logic [WORD-1:0]  reg_data_i,
+                        input logic [WORD-1:0]  program_counter_i,
+
+                        output mem_write_signal       mem_write_en_o,
+                        output mem_read_signal        mem_read_en_o,
+                        output reg_file_write_sig     reg_file_write_en_o,
+                        output reg_file_data_source   reg_file_input_ctrl_sig_o,
+                        output alu_input_source       alu_input_1_select_o,
+                        output alu_input_source       alu_input_2_select_o,
+                        output pipeline_ctrl_sig      pipeline_ctrl_sig_o,
+                        output logic [4:0]            accumulator_imm_o,
+                        output logic [ADDR_WIDTH-1:0] reg_1_source_addr_o,
+                        output logic [ADDR_WIDTH-1:0] reg_2_source_addr_o,
+                        output logic [ADDR_WIDTH-1:0] reg_dest_addr_o,
+                        output logic [WORD-1:0]       immediate_o,
+                        output logic [WORD-1:0]       reg_1_data_o,
+                        output logic [WORD-1:0]       reg_2_data_o,
+                        output logic [WORD-1:0]       program_counter_o,
+                        output logic [WORD-1:0]       stack_pointer_o
+                     );
+
+            //////////////////////////////////////
+            //    SIGNALS FROM CONTROL LOGIC    //
+            //////////////////////////////////////
+            mem_write_signal        mem_write_en_internal;
+            mem_read_signal         mem_read_en_internal;
+            reg_file_write_sig      reg_file_write_en_internal;
+            reg_file_data_source    reg_file_data_source_internal;   
+            alu_input_source         alu_input_1_select_internal;
+            alu_input_source         alu_input_2_select_internal;
+            pipeline_ctrl_sig        pipeline_ctrl_signal_internal;
+            reg_file_addr_1_source   reg_file_addr_1_source_internal;
+            logic [ADDR_WIDTH-1:0]   mult_access_reg_file_1_addr_internal;
+            logic [ADDR_WIDTH-1:0]   mult_access_dest_reg_addr_internal;
+            logic [4:0]              accumulator_imm_internal;
+
+            //////////////////////////////////////
+            //    SIGNALS FROM ADDR DECODER     //
+            //////////////////////////////////////
+            logic [ADDR_WIDTH-1:0]  reg_addr_1_from_addr_decoder; 
+            logic [ADDR_WIDTH-1:0]  reg_addr_2_from_addr_decoder;
+            logic [ADDR_WIDTH-1:0]  reg_dest_addr_from_addr_decoder;
+
+            //////////////////////////////////////
+            //    SIGNALS FROM IMMEDIATE GEN    //
+            //////////////////////////////////////
+            logic [WORD-1:0]  immediate_internal;
+
+            //////////////////////////////////////
+            // ADDR SIGNALS TO DEC_EXE REGISTER //
+            //////////////////////////////////////
+            logic [ADDR_WIDTH-1:0] reg_1_source_addr_internal;
+            logic [ADDR_WIDTH-1:0] reg_dest_addr_internal;
+
+
+            always_comb begin
+               pipeline_ctrl_sig_o = pipeline_ctrl_signal_internal;
+               if (reg_file_addr_1_source_internal == ADDR_FROM_INSTRUCTION) begin
+                  reg_1_source_addr_internal = reg_addr_1_from_addr_decoder;
+                  reg_dest_addr_internal = reg_dest_addr_from_addr_decoder;
+               end 
+               else begin
+                  reg_1_source_addr_internal = mult_access_reg_file_1_addr_internal;
+                  reg_dest_addr_internal = mult_access_dest_reg_addr_internal;
+               end
+               
+            end
+
+            cpu_controller control_module(
+                                        .clk_i(clk_i),
+                                        .reset_i(reset_i),
+                                        .instruction_i(instruction_i),
+
+                                        .mem_write_en_o(mem_write_en_internal),
+                                        .mem_read_en_o(mem_read_en_internal),
+                                        .reg_write_en_o(reg_file_write_en_internal),
+                                        .reg_file_data_source_o(reg_file_data_source_internal),
+                                        .alu_input_1_select_o(alu_input_1_select_internal),
+                                        .alu_input_2_select_o(alu_input_2_select_internal),
+                                        .pipeline_ctrl_signal_o(pipeline_ctrl_signal_internal),
+                                        .reg_file_addr_1_source_o(reg_file_addr_1_source_internal),
+                                        .mult_access_reg_file_1_addr_o(mult_access_reg_file_1_addr_internal),
+                                        .mult_access_dest_reg_addr(mult_access_dest_reg_addr_internal),
+                                        .accumulator_imm_o(accumulator_imm_internal)
+                                       );
+
+            reg_addr_decoder addr_decoder(
+                                       .instruction_i(instruction_i),
+
+                                       .reg_addr_1_o(reg_addr_1_from_addr_decoder),
+                                       .reg_addr_2_o(reg_addr_2_from_addr_decoder),
+                                       .reg_dest_addr_o(reg_dest_addr_from_addr_decoder)
+                                        );   
+
+            imm_gen  immediate_generator(
+                                       .clk_i(clk_i),
+                                       .instruction_i(instruction_i),
+
+                                       .immediate_value_o(immediate_internal)
+                                       );
+
+            clocked_reg_file reg_file (
+                                       .clk_i(clk_i),
+                                       .write_en_i(reg_file_write_en_i),
+                                       .read_addr_1_i(reg_1_source_addr_internal),
+                                       .read_addr_2_i(reg_addr_2_from_addr_decoder),
+                                       .write_addr_i(reg_dest_addr_internal),
+                                       .reg_data_i(reg_data_i),
+                                       .program_counter_i(program_counter_i),
+
+                                       .reg_data_1_o(reg_1_data_o),
+                                       .reg_data_2_o(reg_2_data_o),
+                                       .program_counter_o(program_counter_o),
+                                       .stack_pointer_o(stack_pointer_o)
+            );
+
+            decode_execution_register decode_exe_reg(
+                                        .clk_i(clk_i),
+                                        .reset_i(reset_i),
+                                        .mem_write_en_i(mem_write_en_internal),
+                                        .mem_read_en_i(mem_read_en_internal),
+                                        .reg_file_write_en_i(reg_file_write_en_internal),
+                                        .reg_file_input_ctrl_sig_i(reg_file_data_source_internal),
+                                        .alu_input_1_select_i(alu_input_1_select_internal),
+                                        .alu_input_2_select_i(alu_input_2_select_internal),
+                                        .accumulator_imm_i(accumulator_imm_internal),
+                                        .immediate_i(immediate_internal),
+                                        .reg_1_source_addr_i(reg_1_source_addr_internal),
+                                        .reg_2_source_addr_i(reg_addr_2_from_addr_decoder),
+                                        .reg_dest_addr_i(reg_dest_addr_internal),
+
+                                        .mem_write_en_o(mem_write_en_o),
+                                        .mem_read_en_o(mem_read_en_o),
+                                        .reg_file_write_en_o(reg_file_write_en_o),
+                                        .reg_file_input_ctrl_sig_o(reg_file_input_ctrl_sig_o),
+                                        .alu_input_1_select_o(alu_input_1_select_o),
+                                        .alu_input_2_select_o(alu_input_2_select_o),
+                                        .accumulator_imm_o(accumulator_imm_o),
+                                        .immediate_o(immediate_o),
+                                        .reg_1_source_addr_o(reg_1_source_addr_o),
+                                        .reg_2_source_addr_o(reg_2_source_addr_o),
+                                        .reg_dest_addr_o(reg_dest_addr_o)
+            );
+
+endmodule
