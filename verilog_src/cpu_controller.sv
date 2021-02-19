@@ -65,7 +65,6 @@ module cpu_controller(
         accumulator_imm_o = accumulator << 2;
 
        casez(instruction_i.op)
-
             SHIFT_IMM: begin
                 reg_write_en_o = REG_WRITE;
                 casez(shift_code_internal)
@@ -103,7 +102,6 @@ module cpu_controller(
                     default: ;  // this is just here to ensure that there are no latches
                 endcase
             end
-
             DATA_PROCESSING: begin
                 reg_write_en_o = REG_WRITE;
                 casez(data_processing_code_internal)
@@ -138,30 +136,32 @@ module cpu_controller(
                     default: ;
                 endcase
             end
-
+            // TODO: implement special instructions
             SPECIAL: begin
-                
             end
-
             LOAD_LITERAL: begin
-                alu_input_1_select_o = FROM_PC;
+                reg_write_en_o =       REG_WRITE;
                 alu_input_2_select_o = FROM_IMM;
             end
-
-            LOAD_STORE_IMM: alu_input_2_select_o = FROM_IMM;
-
+            LOAD_STORE_REG: begin
+                if (instruction_i[11] || instruction_i[10:9] == 2'b11)
+                    reg_write_en_o =   REG_WRITE;
+            end
+            LOAD_STORE_IMM, 
+            LOAD_STORE_BYTE,
+            LOAD_STORE_HW,
+            LOAD_STORE_SP_R: begin
+                alu_input_2_select_o = FROM_IMM;
+                if (instruction_i[11])
+                    reg_write_en_o =   REG_WRITE; 
+            end
             GEN_PC_REL: begin
-                alu_input_1_select_o = FROM_PC;
                 alu_input_2_select_o = FROM_IMM;
             end
-
             GEN_SP_REL: begin
-                alu_input_1_select_o = FROM_SP;
                 alu_input_2_select_o = FROM_IMM;
             end
-
             MIS_16_BIT: ;
-
             STORE_MULT_REG: begin
                 alu_input_2_select_o =      FROM_ACCUMULATOR;
                 mem_write_en_o       =      reg_list[load_store_counter];
@@ -172,7 +172,6 @@ module cpu_controller(
                     inc_load_store_counter = INC_COUNTER;
                 end
             end
-
             LOAD_MULT_REG: begin
                 alu_input_2_select_o    = FROM_ACCUMULATOR;
                 reg_write_en_o          = reg_list[load_store_counter];
@@ -182,18 +181,13 @@ module cpu_controller(
                     pipeline_ctrl_signal_o = STALL_PIPELINE;
                     inc_load_store_counter = NO_INC_COUNTER;
                 end
-    
             end
-
             COND_BRANCH: ;
-
             UNCOND_BRANCH: ;
-
             // there are 3 opcodes (11101, 11110, 11111) that indicate that the current instruction
             // is the first part of a 32 bit instruction. In that case we need to insert a bubble,
             // which the default values for the control signal already do
             default: ;
-
        endcase 
     end
 
