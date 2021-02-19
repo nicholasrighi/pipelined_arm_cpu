@@ -36,9 +36,8 @@ module imm_gen(
 
             SHIFT_IMM: begin
                 casez(instruction_i[13:9])
-                    // TODO: check about shifting with a value of 0, not sure what to do there
-                    LEFT_SHIFT_L_IM:      immediate_value_o = 32'(instruction_i[10:6]);
-                    RIGHT_SHIFT_L_IM:     immediate_value_o = 32'(instruction_i[10:6]);
+                    LEFT_SHIFT_L_IM, 
+                    RIGHT_SHIFT_L_IM,    
                     RIGHT_SHIFT_A_IM:     immediate_value_o = 32'(instruction_i[10:6]);
                     ADD_3_IMM, SUB_3_IMM: immediate_value_o = 32'(instruction_i[8:6]);
                     ADD_8_IMM, SUB_8_IMM, 

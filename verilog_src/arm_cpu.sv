@@ -31,6 +31,7 @@ module arm_cpu(
     alu_input_source        alu_input_2_select_DECODE_TO_EXE;
     update_flag_sig         update_flag_DECODE_TO_EXE;
     pipeline_ctrl_sig       pipeline_ctrl_sig_DECODE_TO_EXE;
+    alu_control_signal      alu_control_signal_DECODE_TO_EXE;
     logic [4:0]             accumulator_imm_DECODE_TO_EXE;
     logic [ADDR_WIDTH-1:0]  reg_1_source_addr_DECODE_TO_EXE;
     logic [ADDR_WIDTH-1:0]  reg_2_source_addr_DECODE_TO_EXE;
@@ -81,6 +82,7 @@ module arm_cpu(
                         .reg_file_input_ctrl_sig_o(reg_file_input_ctrl_sig_DECODE_TO_EXE),
                         .alu_input_1_select_o(alu_input_1_select_DECODE_TO_EXE),
                         .alu_input_2_select_o(alu_input_2_select_DECODE_TO_EXE),
+                        .alu_control_signal_o(alu_control_signal_DECODE_TO_EXE),
                         .update_flag_o(update_flag_DECODE_TO_EXE),
                         .pipeline_ctrl_sig_o(pipeline_ctrl_sig_DECODE_TO_EXE),
                         .accumulator_imm_o(accumulator_imm_DECODE_TO_EXE),

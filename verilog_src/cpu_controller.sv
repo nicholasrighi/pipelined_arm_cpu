@@ -12,6 +12,7 @@ module cpu_controller(
                         output reg_file_data_source     reg_file_data_source_o,
                         output alu_input_source         alu_input_1_select_o,
                         output alu_input_source         alu_input_2_select_o,
+                        output alu_control_signal       alu_control_signal_o,
                         output pipeline_ctrl_sig        pipeline_ctrl_signal_o,
                         output reg_file_addr_1_source   reg_file_addr_1_source_o,
                         output logic [ADDR_WIDTH-1:0]   mult_access_reg_file_1_addr_o,
@@ -24,7 +25,9 @@ module cpu_controller(
     localparam INC_COUNTER = 1'b1;
     localparam NO_INC_COUNTER = 1'b0;
 
+    // verilator lint_off UNUSED
     logic [4:0] shift_code_internal;
+    // verilator lint_on UNUSED
     logic [3:0] data_processing_code_internal;
 
     // signals to deal with consecutive loads/stores
@@ -51,6 +54,7 @@ module cpu_controller(
         pipeline_ctrl_signal_o =    NO_STALL_PIPELINE;
         inc_load_store_counter =    NO_INC_COUNTER;
         reg_file_addr_1_source_o =  ADDR_FROM_INSTRUCTION;
+        alu_control_signal_o =      ALU_ADD;
 
         // signals for multi cycle load/stores
         // TODO: check if this 0 bit concationation is correct
@@ -65,13 +69,53 @@ module cpu_controller(
        casez(instruction_i.op)
 
             SHIFT_IMM: begin
-                if (shift_code_internal != ADD_REG && shift_code_internal != SUB_REG)
-                    alu_input_2_select_o = FROM_IMM;
-                // TODO: check that inside keyword is safe
-                if (shift_code_internal !=? {CMP_8_IMM})
-                    reg_write_en_o = REG_WRITE;
-                else
-                    update_flag_o =  NO_UPDATE_FLAG;
+                reg_write_en_o = REG_WRITE;
+                casez(instruction_i[13:9])
+
+                    LEFT_SHIFT_L_IM: begin
+                        alu_control_signal_o = ALU_LEFT_SHIFT_L;
+                        alu_input_2_select_o = FROM_IMM;
+                    end                      
+
+                    RIGHT_SHIFT_L_IM:   begin 
+                        alu_control_signal_o = ALU_RIGHT_SHIFT_L;
+                        alu_input_2_select_o = FROM_IMM;
+                    end
+
+                    RIGHT_SHIFT_A_IM:   begin
+                        alu_control_signal_o = ALU_RIGHT_SHIFT_A;
+                        alu_input_2_select_o = FROM_IMM;
+                    end
+
+                    ADD_REG: 
+                        alu_control_signal_o = ALU_ADD;
+
+                    SUB_REG:            
+                        alu_control_signal_o = ALU_SUB;
+
+                    ADD_3_IMM, ADD_8_IMM: begin
+                        alu_input_2_select_o = FROM_IMM;
+                    end
+
+                    SUB_3_IMM, SUB_8_IMM: begin
+                        alu_control_signal_o = ALU_SUB;
+                        alu_input_2_select_o = FROM_IMM;
+                    end                    
+
+                    MOV_8_IMM: begin
+                        alu_control_signal_o = ALU_ADD;
+                        alu_input_1_select_o = FROM_ZERO;
+                        alu_input_2_select_o = FROM_IMM;
+                    end
+
+                    CMP_8_IMM: begin
+                        alu_input_2_select_o = FROM_IMM;
+                        alu_control_signal_o = ALU_SUB;
+                        reg_write_en_o = NO_REG_WRITE;
+                    end       
+
+                    default: ;  // this is just here to ensure that there are no latches
+                endcase
             end
 
             DATA_PROCESSING: begin

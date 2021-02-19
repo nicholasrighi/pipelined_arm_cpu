@@ -13,6 +13,7 @@ module decode_execution_register
                                     input reg_file_data_source        reg_file_input_ctrl_sig_i,
                                     input alu_input_source            alu_input_1_select_i,
                                     input alu_input_source            alu_input_2_select_i,
+                                    input alu_control_signal          alu_control_signal_i,
                                     input update_flag_sig             update_flag_i,
                                     input logic [4:0]                 accumulator_imm_i,
                                     input logic [ADDR_WIDTH-1:0]      reg_1_source_addr_i,
@@ -26,6 +27,7 @@ module decode_execution_register
                                     output reg_file_data_source       reg_file_input_ctrl_sig_o,
                                     output alu_input_source           alu_input_1_select_o,
                                     output alu_input_source           alu_input_2_select_o,
+                                    output alu_control_signal         alu_control_signal_o,
                                     output update_flag_sig            update_flag_o,
                                     output logic [4:0]                accumulator_imm_o,
                                     output logic [ADDR_WIDTH-1:0]     reg_1_source_addr_o,
@@ -39,15 +41,16 @@ module decode_execution_register
             mem_write_en_o              <= NO_MEM_WRITE;
             mem_read_en_o               <= NO_MEM_READ;
             reg_file_write_en_o         <= NO_REG_WRITE;
-            reg_file_input_ctrl_sig_o   <= FROM_ALU;
-            alu_input_1_select_o        <= FROM_REG;
-            alu_input_2_select_o        <= FROM_REG;
+            reg_file_input_ctrl_sig_o   <= 'x;
+            alu_input_1_select_o        <= 'x;
+            alu_input_2_select_o        <= 'x;
+            alu_control_signal_o        <= 'x;
             update_flag_o               <= NO_UPDATE_FLAG;
-            accumulator_imm_o           <= '0;
-            immediate_o                 <= '0;
-            reg_1_source_addr_o         <= '0;
-            reg_2_source_addr_o         <= '0;
-            reg_dest_addr_o             <= '0;
+            accumulator_imm_o           <= 'x;
+            immediate_o                 <= 'x;
+            reg_1_source_addr_o         <= 'x;
+            reg_2_source_addr_o         <= 'x;
+            reg_dest_addr_o             <= 'x;
        end 
        else begin
             mem_write_en_o              <= mem_write_en_i;
@@ -56,6 +59,7 @@ module decode_execution_register
             reg_file_input_ctrl_sig_o   <= reg_file_input_ctrl_sig_i;
             alu_input_1_select_o        <= alu_input_1_select_i;
             alu_input_2_select_o        <= alu_input_2_select_i;
+            alu_control_signal_o        <= alu_control_signal_i;
             update_flag_o               <= update_flag_i;
             accumulator_imm_o           <= accumulator_imm_i;
             immediate_o                 <= immediate_i;

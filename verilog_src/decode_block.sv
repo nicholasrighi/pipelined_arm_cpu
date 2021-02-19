@@ -16,6 +16,7 @@ module decode_block(
                         output alu_input_source       alu_input_1_select_o,
                         output alu_input_source       alu_input_2_select_o,
                         output pipeline_ctrl_sig      pipeline_ctrl_sig_o,
+                        output alu_control_signal     alu_control_signal_o,
                         output logic [4:0]            accumulator_imm_o,
                         output logic [ADDR_WIDTH-1:0] reg_1_source_addr_o,
                         output logic [ADDR_WIDTH-1:0] reg_2_source_addr_o,
@@ -36,6 +37,7 @@ module decode_block(
             reg_file_data_source    reg_file_data_source_internal;   
             alu_input_source         alu_input_1_select_internal;
             alu_input_source         alu_input_2_select_internal;
+            alu_control_signal       alu_control_signal_internal;
             update_flag_sig          update_flag_internal;
             pipeline_ctrl_sig        pipeline_ctrl_signal_internal;
             reg_file_addr_1_source   reg_file_addr_1_source_internal;
@@ -86,6 +88,7 @@ module decode_block(
                                         .reg_file_data_source_o(reg_file_data_source_internal),
                                         .alu_input_1_select_o(alu_input_1_select_internal),
                                         .alu_input_2_select_o(alu_input_2_select_internal),
+                                        .alu_control_signal_o(alu_control_signal_internal),
                                         .update_flag_o(update_flag_internal),
                                         .pipeline_ctrl_signal_o(pipeline_ctrl_signal_internal),
                                         .reg_file_addr_1_source_o(reg_file_addr_1_source_internal),
@@ -133,6 +136,7 @@ module decode_block(
                                         .reg_file_input_ctrl_sig_i(reg_file_data_source_internal),
                                         .alu_input_1_select_i(alu_input_1_select_internal),
                                         .alu_input_2_select_i(alu_input_2_select_internal),
+                                        .alu_control_signal_i(alu_control_signal_internal),
                                         .update_flag_i(update_flag_internal),
                                         .accumulator_imm_i(accumulator_imm_internal),
                                         .immediate_i(immediate_internal),
@@ -146,6 +150,7 @@ module decode_block(
                                         .reg_file_input_ctrl_sig_o(reg_file_input_ctrl_sig_o),
                                         .alu_input_1_select_o(alu_input_1_select_o),
                                         .alu_input_2_select_o(alu_input_2_select_o),
+                                        .alu_control_signal_o(alu_control_signal_o),
                                         .update_flag_o(update_flag_o),
                                         .accumulator_imm_o(accumulator_imm_o),
                                         .immediate_o(immediate_o),
