@@ -87,8 +87,8 @@
 	typedef enum logic {NO_UPDATE_FLAG = 0, UPDATE_FLAG} 				update_flag_sig;
 
 	typedef enum logic [3:0]{ALU_LEFT_SHIFT_L, ALU_RIGHT_SHIFT_L, 
-		ALU_RIGHT_SHIFT_A, ALU_ADD, ALU_SUB, ALU_AND, ALU_OR, 
-		ALU_ROTATE_R, ALU_MULT, ALU_NOT}								alu_control_signal;
+		ALU_RIGHT_SHIFT_A, ALU_ADD, ALU_SUB, ALU_AND, ALU_OR, ALU_XOR,
+		ALU_ROTATE_R, ALU_MULT, ALU_NOT, ALU_BIT_CLEAR}					alu_control_signal;
 
 	// verilator lint_on UNUSED
 `endif

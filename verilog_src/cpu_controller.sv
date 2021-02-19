@@ -25,9 +25,7 @@ module cpu_controller(
     localparam INC_COUNTER = 1'b1;
     localparam NO_INC_COUNTER = 1'b0;
 
-    // verilator lint_off UNUSED
     logic [4:0] shift_code_internal;
-    // verilator lint_on UNUSED
     logic [3:0] data_processing_code_internal;
 
     // signals to deal with consecutive loads/stores
@@ -70,57 +68,75 @@ module cpu_controller(
 
             SHIFT_IMM: begin
                 reg_write_en_o = REG_WRITE;
-                casez(instruction_i[13:9])
-
+                casez(shift_code_internal)
                     LEFT_SHIFT_L_IM: begin
-                        alu_control_signal_o = ALU_LEFT_SHIFT_L;
-                        alu_input_2_select_o = FROM_IMM;
+                                alu_control_signal_o = ALU_LEFT_SHIFT_L;
+                                alu_input_2_select_o = FROM_IMM;
                     end                      
-
                     RIGHT_SHIFT_L_IM:   begin 
-                        alu_control_signal_o = ALU_RIGHT_SHIFT_L;
-                        alu_input_2_select_o = FROM_IMM;
+                                alu_control_signal_o = ALU_RIGHT_SHIFT_L;
+                                alu_input_2_select_o = FROM_IMM;
                     end
-
                     RIGHT_SHIFT_A_IM:   begin
-                        alu_control_signal_o = ALU_RIGHT_SHIFT_A;
-                        alu_input_2_select_o = FROM_IMM;
+                                alu_control_signal_o = ALU_RIGHT_SHIFT_A;
+                                alu_input_2_select_o = FROM_IMM;
                     end
-
-                    ADD_REG: 
-                        alu_control_signal_o = ALU_ADD;
-
-                    SUB_REG:            
-                        alu_control_signal_o = ALU_SUB;
-
+                    ADD_REG:    alu_control_signal_o = ALU_ADD;
+                    SUB_REG:    alu_control_signal_o = ALU_SUB;
                     ADD_3_IMM, ADD_8_IMM: begin
-                        alu_input_2_select_o = FROM_IMM;
+                                alu_input_2_select_o = FROM_IMM;
                     end
-
                     SUB_3_IMM, SUB_8_IMM: begin
-                        alu_control_signal_o = ALU_SUB;
-                        alu_input_2_select_o = FROM_IMM;
+                                alu_control_signal_o = ALU_SUB;
+                                alu_input_2_select_o = FROM_IMM;
                     end                    
-
                     MOV_8_IMM: begin
-                        alu_control_signal_o = ALU_ADD;
-                        alu_input_1_select_o = FROM_ZERO;
-                        alu_input_2_select_o = FROM_IMM;
+                                alu_control_signal_o = ALU_ADD;
+                                alu_input_1_select_o = FROM_ZERO;
+                                alu_input_2_select_o = FROM_IMM;
                     end
-
                     CMP_8_IMM: begin
-                        alu_input_2_select_o = FROM_IMM;
-                        alu_control_signal_o = ALU_SUB;
-                        reg_write_en_o = NO_REG_WRITE;
+                                alu_input_2_select_o = FROM_IMM;
+                                alu_control_signal_o = ALU_SUB;
+                                reg_write_en_o = NO_REG_WRITE;
                     end       
-
                     default: ;  // this is just here to ensure that there are no latches
                 endcase
             end
 
             DATA_PROCESSING: begin
-                if (data_processing_code_internal == REVERSE_SUB)
-                    alu_input_2_select_o = FROM_IMM;
+                reg_write_en_o = REG_WRITE;
+                casez(data_processing_code_internal)
+                    AND:            alu_control_signal_o = ALU_AND;
+                    XOR:            alu_control_signal_o = ALU_XOR;
+                    LEFT_SHIFT_L:   alu_control_signal_o = ALU_LEFT_SHIFT_L;
+                    RIGHT_SHIFT_L:  alu_control_signal_o = ALU_RIGHT_SHIFT_L;
+                    RIGHT_SHIFT_A:  alu_control_signal_o = ALU_RIGHT_SHIFT_A;
+                    ADD_W_CARRY:    alu_control_signal_o = ALU_ADD;
+                    SUB_W_CARRY:    alu_control_signal_o = ALU_SUB;
+                    ROTATE_R:       alu_control_signal_o = ALU_ROTATE_R;
+                    SET_AND_FLAG:   begin
+                                    alu_control_signal_o = ALU_AND;
+                                    reg_write_en_o =       NO_REG_WRITE;
+                    end
+                    REVERSE_SUB: begin
+                                    alu_control_signal_o = ALU_SUB; 
+                                    alu_input_1_select_o = FROM_ZERO;
+                    end
+                    CMP_REG: begin
+                                    alu_control_signal_o = ALU_SUB;
+                                    reg_write_en_o =       NO_REG_WRITE;
+                    end
+                    CMP_NEG: begin
+                                    alu_control_signal_o = ALU_ADD; 
+                                    reg_write_en_o =       NO_REG_WRITE;
+                    end
+                    OR:             alu_control_signal_o = ALU_OR;
+                    MULT:           alu_control_signal_o = ALU_MULT;
+                    BIT_CLEAR:      alu_control_signal_o = ALU_BIT_CLEAR;
+                    NOT:            alu_control_signal_o = ALU_NOT;
+                    default: ;
+                endcase
             end
 
             SPECIAL: begin
