@@ -5,6 +5,7 @@ module cpu_controller(
                         input                           reset_i,
                         input instruction               instruction_i,
 
+                        output update_flag_sig          update_flag_o,
                         output mem_write_signal         mem_write_en_o,
                         output mem_read_signal          mem_read_en_o,
                         output reg_file_write_sig       reg_write_en_o,
@@ -17,7 +18,8 @@ module cpu_controller(
                         output logic [ADDR_WIDTH-1:0]   mult_access_dest_reg_addr,
                         output logic [4:0]              accumulator_imm_o
                         );
-    
+
+
     localparam MAX_COUNTER_VALUE = 3'd7;
     localparam INC_COUNTER = 1'b1;
     localparam NO_INC_COUNTER = 1'b0;
@@ -39,6 +41,7 @@ module cpu_controller(
         reg_list =                      instruction_i[7:0];
 
         // set defaults for output signals
+        update_flag_o =             UPDATE_FLAG;
         alu_input_1_select_o =      FROM_REG;
         alu_input_2_select_o =      FROM_REG;
         reg_file_data_source_o =    FROM_ALU;
@@ -64,6 +67,11 @@ module cpu_controller(
             SHIFT_IMM: begin
                 if (shift_code_internal != ADD_REG && shift_code_internal != SUB_REG)
                     alu_input_2_select_o = FROM_IMM;
+                // TODO: check that inside keyword is safe
+                if (shift_code_internal !=? {CMP_8_IMM})
+                    reg_write_en_o = REG_WRITE;
+                else
+                    update_flag_o =  NO_UPDATE_FLAG;
             end
 
             DATA_PROCESSING: begin
@@ -80,7 +88,7 @@ module cpu_controller(
                 alu_input_2_select_o = FROM_IMM;
             end
 
-            LOAD_OFF_IMM, LOAD_SPECIAL: alu_input_2_select_o = FROM_IMM;
+            LOAD_STORE_IMM: alu_input_2_select_o = FROM_IMM;
 
             GEN_PC_REL: begin
                 alu_input_1_select_o = FROM_PC;
