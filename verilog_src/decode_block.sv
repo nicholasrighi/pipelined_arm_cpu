@@ -15,7 +15,7 @@ module decode_block(
                         output reg_file_data_source   reg_file_input_ctrl_sig_o,
                         output alu_input_source       alu_input_1_select_o,
                         output alu_input_source       alu_input_2_select_o,
-                        output pipeline_ctrl_sig      pipeline_ctrl_sig_o,
+                        output stall_pipeline_sig     pipeline_ctrl_sig_o,
                         output alu_control_signal     alu_control_signal_o,
                         output logic [4:0]            accumulator_imm_o,
                         output logic [ADDR_WIDTH-1:0] reg_1_source_addr_o,
@@ -39,10 +39,7 @@ module decode_block(
             alu_input_source         alu_input_2_select_internal;
             alu_control_signal       alu_control_signal_internal;
             update_flag_sig          update_flag_internal;
-            pipeline_ctrl_sig        pipeline_ctrl_signal_internal;
-            reg_file_addr_1_source   reg_file_addr_1_source_internal;
-            logic [ADDR_WIDTH-1:0]   mult_access_reg_file_1_addr_internal;
-            logic [ADDR_WIDTH-1:0]   mult_access_dest_reg_addr_internal;
+            stall_pipeline_sig       pipeline_ctrl_signal_internal;
             logic [4:0]              accumulator_imm_internal;
 
             //////////////////////////////////////
@@ -57,24 +54,8 @@ module decode_block(
             //////////////////////////////////////
             logic [WORD-1:0]  immediate_internal;
 
-            //////////////////////////////////////
-            // ADDR SIGNALS TO DEC_EXE REGISTER //
-            //////////////////////////////////////
-            logic [ADDR_WIDTH-1:0] reg_1_source_addr_internal;
-            logic [ADDR_WIDTH-1:0] reg_dest_addr_internal;
-
-
             always_comb begin
                pipeline_ctrl_sig_o = pipeline_ctrl_signal_internal;
-               if (reg_file_addr_1_source_internal == ADDR_FROM_INSTRUCTION) begin
-                  reg_1_source_addr_internal = reg_addr_1_from_addr_decoder;
-                  reg_dest_addr_internal = reg_dest_addr_from_addr_decoder;
-               end 
-               else begin
-                  reg_1_source_addr_internal = mult_access_reg_file_1_addr_internal;
-                  reg_dest_addr_internal = mult_access_dest_reg_addr_internal;
-               end
-               
             end
 
             cpu_controller control_module(
@@ -91,9 +72,6 @@ module decode_block(
                                         .alu_control_signal_o(alu_control_signal_internal),
                                         .update_flag_o(update_flag_internal),
                                         .pipeline_ctrl_signal_o(pipeline_ctrl_signal_internal),
-                                        .reg_file_addr_1_source_o(reg_file_addr_1_source_internal),
-                                        .mult_access_reg_file_1_addr_o(mult_access_reg_file_1_addr_internal),
-                                        .mult_access_dest_reg_addr(mult_access_dest_reg_addr_internal),
                                         .accumulator_imm_o(accumulator_imm_internal)
                                        );
 
@@ -115,9 +93,9 @@ module decode_block(
             clocked_reg_file reg_file (
                                        .clk_i(clk_i),
                                        .write_en_i(reg_file_write_en_i),
-                                       .read_addr_1_i(reg_1_source_addr_internal),
+                                       .read_addr_1_i(reg_addr_1_from_addr_decoder),
                                        .read_addr_2_i(reg_addr_2_from_addr_decoder),
-                                       .write_addr_i(reg_dest_addr_internal),
+                                       .write_addr_i(reg_dest_addr_from_addr_decoder),
                                        .reg_data_i(reg_data_i),
                                        .program_counter_i(program_counter_i),
 
@@ -140,9 +118,9 @@ module decode_block(
                                         .update_flag_i(update_flag_internal),
                                         .accumulator_imm_i(accumulator_imm_internal),
                                         .immediate_i(immediate_internal),
-                                        .reg_1_source_addr_i(reg_1_source_addr_internal),
+                                        .reg_1_source_addr_i(reg_addr_1_from_addr_decoder),
                                         .reg_2_source_addr_i(reg_addr_2_from_addr_decoder),
-                                        .reg_dest_addr_i(reg_dest_addr_internal),
+                                        .reg_dest_addr_i(reg_dest_addr_from_addr_decoder),
 
                                         .mem_write_en_o(mem_write_en_o),
                                         .mem_read_en_o(mem_read_en_o),

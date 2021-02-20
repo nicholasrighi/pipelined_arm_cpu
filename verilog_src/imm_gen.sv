@@ -55,6 +55,8 @@ module imm_gen(
             LOAD_STORE_BYTE:    immediate_value_o = 32'(instruction_i[10:6]);
             LOAD_STORE_HW:      immediate_value_o = 32'({instruction_i[10:6],1'b0});
             LOAD_STORE_SP_R:    immediate_value_o = 32'({instruction_i[7:0],2'b0});
+            GEN_PC_REL, 
+            GEN_SP_REL:         immediate_value_o = 32'({instruction_i[7:0], 2'b0});
             MIS_16_BIT: begin
                 casez(instruction_i[11:5])
                     ADD_IMM_SP, SUB_IMM_SP: immediate_value_o = 32'({instruction_i[6:0], 2'b0});

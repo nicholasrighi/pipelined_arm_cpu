@@ -13,15 +13,12 @@ module cpu_controller(
                         output alu_input_source         alu_input_1_select_o,
                         output alu_input_source         alu_input_2_select_o,
                         output alu_control_signal       alu_control_signal_o,
-                        output pipeline_ctrl_sig        pipeline_ctrl_signal_o,
-                        output reg_file_addr_1_source   reg_file_addr_1_source_o,
-                        output logic [ADDR_WIDTH-1:0]   mult_access_reg_file_1_addr_o,
-                        output logic [ADDR_WIDTH-1:0]   mult_access_dest_reg_addr,
+                        output stall_pipeline_sig       pipeline_ctrl_signal_o,
                         output logic [4:0]              accumulator_imm_o
                         );
 
 
-    localparam MAX_COUNTER_VALUE = 3'd7;
+    localparam MAX_COUNTER_VALUE = 4'd8;
     localparam INC_COUNTER = 1'b1;
     localparam NO_INC_COUNTER = 1'b0;
 
@@ -30,7 +27,8 @@ module cpu_controller(
 
     // signals to deal with consecutive loads/stores
     logic inc_load_store_counter;
-    logic [2:0] load_store_counter;
+    logic store_base_addr_mult_load_store;
+    logic [3:0] load_store_counter;
     logic [4:0] accumulator;
     logic [7:0] reg_list;
 
@@ -42,7 +40,7 @@ module cpu_controller(
         reg_list =                      instruction_i[7:0];
 
         // set defaults for output signals
-        update_flag_o =             UPDATE_FLAG;
+        update_flag_o =             NO_UPDATE_FLAG; 
         alu_input_1_select_o =      FROM_REG;
         alu_input_2_select_o =      FROM_REG;
         reg_file_data_source_o =    FROM_ALU;
@@ -51,13 +49,7 @@ module cpu_controller(
         reg_write_en_o =            NO_REG_WRITE;
         pipeline_ctrl_signal_o =    NO_STALL_PIPELINE;
         inc_load_store_counter =    NO_INC_COUNTER;
-        reg_file_addr_1_source_o =  ADDR_FROM_INSTRUCTION;
         alu_control_signal_o =      ALU_ADD;
-
-        // signals for multi cycle load/stores
-        // TODO: check if this 0 bit concationation is correct
-        mult_access_reg_file_1_addr_o = 4'(load_store_counter);
-        mult_access_dest_reg_addr     = 4'(instruction_i[10:8]);
 
         // accumulator always stores the number of register that have been written to 
         // memory. Since each register is 4 bytes, the offset from the base register is 
@@ -66,6 +58,7 @@ module cpu_controller(
 
        casez(instruction_i.op)
             SHIFT_IMM: begin
+                update_flag_o = UPDATE_FLAG;
                 reg_write_en_o = REG_WRITE;
                 casez(shift_code_internal)
                     LEFT_SHIFT_L_IM: begin
@@ -103,6 +96,7 @@ module cpu_controller(
                 endcase
             end
             DATA_PROCESSING: begin
+                update_flag_o = UPDATE_FLAG;
                 reg_write_en_o = REG_WRITE;
                 casez(data_processing_code_internal)
                     AND:            alu_control_signal_o = ALU_AND;
@@ -155,17 +149,16 @@ module cpu_controller(
                 if (instruction_i[11])
                     reg_write_en_o =   REG_WRITE; 
             end
-            GEN_PC_REL: begin
-                alu_input_2_select_o = FROM_IMM;
-            end
+            GEN_PC_REL, 
             GEN_SP_REL: begin
+                reg_write_en_o =       REG_WRITE;
                 alu_input_2_select_o = FROM_IMM;
             end
             MIS_16_BIT: ;
             STORE_MULT_REG: begin
                 alu_input_2_select_o =      FROM_ACCUMULATOR;
-                mem_write_en_o       =      reg_list[load_store_counter];
-                reg_file_addr_1_source_o =  ADDR_FROM_CTRL_UNIT;
+                mem_write_en_o       =      reg_list[load_store_counter[2:0]];
+                reg_write_en_o =            load_store_counter[3];
                 // need to stall since there might be more registers to process
                 if (load_store_counter != MAX_COUNTER_VALUE) begin
                     pipeline_ctrl_signal_o = STALL_PIPELINE;
@@ -173,35 +166,49 @@ module cpu_controller(
                 end
             end
             LOAD_MULT_REG: begin
-                alu_input_2_select_o    = FROM_ACCUMULATOR;
-                reg_write_en_o          = reg_list[load_store_counter];
-                reg_file_addr_1_source_o= ADDR_FROM_CTRL_UNIT;
+                alu_input_2_select_o =      FROM_ACCUMULATOR;
+                // If we know that the base register is part of the list, then we don't want to write the last addr back. If the 
+                // base register is part of the list, then we need to write the last addr back. So we invert the store_base_addr_mult_load_store
+                // signal to check for this condition
+                reg_write_en_o       =      reg_list[load_store_counter[2:0]] | 
+                                            (~store_base_addr_mult_load_store & load_store_counter == MAX_COUNTER_VALUE);
                 // need to stall since there might be more registers to process
                 if (load_store_counter != MAX_COUNTER_VALUE) begin
                     pipeline_ctrl_signal_o = STALL_PIPELINE;
-                    inc_load_store_counter = NO_INC_COUNTER;
+                    inc_load_store_counter = INC_COUNTER;
                 end
             end
             COND_BRANCH: ;
             UNCOND_BRANCH: ;
-            // there are 3 opcodes (11101, 11110, 11111) that indicate that the current instruction
-            // is the first part of a 32 bit instruction. In that case we need to insert a bubble,
-            // which the default values for the control signal already do
             default: ;
        endcase 
     end
 
     always_ff @(posedge clk_i) begin
+        if (reset_i)
+            store_base_addr_mult_load_store <= 1'b0;
+        else begin
+            // this checks if the base register is part of the register list. If it is, 
+            // then we don't need to keep checking, so preserve the result
+            if (~store_base_addr_mult_load_store)
+                store_base_addr_mult_load_store <= (instruction_i[10:8] == load_store_counter[2:0] & reg_list[load_store_counter[2:0]]);
+        end
+    end
+
+    //  logic for controlling load store counter, used for multiple loads/stores
+    always_ff @(posedge clk_i) begin
         if (reset_i || ~inc_load_store_counter)
-            load_store_counter <= 3'b0;
+            load_store_counter <= 4'b0;
         else
             load_store_counter <= load_store_counter + 1'b1;
     end
 
+    //  logic for controlling accumulator, used for immediate offset for 
+    //  multiple loads/stores
     always_ff @(posedge clk_i)begin
         if (reset_i || ~inc_load_store_counter)
             accumulator <= 5'b0;
-        else if (reg_list[load_store_counter])
+        else if (reg_list[load_store_counter[2:0]])
             accumulator <= accumulator + 1'b1;
     end
 

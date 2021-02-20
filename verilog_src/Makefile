@@ -1,4 +1,4 @@
-TARGET=imm_gen
+TARGET=instruction_mem
 
 build:
 	sv2v --write=adjacent *.sv
