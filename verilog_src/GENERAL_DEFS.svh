@@ -89,7 +89,7 @@
 	typedef enum logic {NO_MEM_READ = 0, MEM_READ} 						mem_read_signal;
 	typedef enum logic {NO_REG_WRITE = 0, REG_WRITE}					reg_file_write_sig;
 	typedef enum logic {NO_STALL_PIPELINE = 0, STALL_PIPELINE}			stall_pipeline_sig;
-	typedef enum logic {ADDR_FROM_INSTRUCTION, ADDR_FROM_CTRL_UNIT}		reg_file_addr_2_source;
+	typedef enum logic {ADDR_FROM_INSTRUCTION, ADDR_FROM_CTRL_UNIT}		reg_addr_data_source;
 	typedef enum logic {NO_UPDATE_FLAG = 0, UPDATE_FLAG} 				update_flag_sig;
 
 	typedef enum logic [4:0]{ALU_LEFT_SHIFT_L, ALU_RIGHT_SHIFT_L, 

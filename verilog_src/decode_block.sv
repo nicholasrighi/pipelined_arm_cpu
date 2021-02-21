@@ -40,10 +40,9 @@ module decode_block(
             alu_control_signal      alu_control_signal_internal;
             update_flag_sig         update_flag_internal;
             stall_pipeline_sig      pipeline_ctrl_signal_internal;
-            // verilator lint_off UNUSED
-            reg_file_addr_2_source  reg_file_addr_2_source_internal;
-            logic [ADDR_WIDTH-1:0]  reg_file_addr_2_from_ctrl_unit;
-            // verilator lint_on UNUSED
+            reg_addr_data_source    reg_file_addr_2_source_internal;
+            reg_addr_data_source    reg_dest_addr_source_internal;
+            logic [ADDR_WIDTH-1:0]  reg_file_addr_o;
             logic [4:0]             accumulator_imm_internal;
 
             //////////////////////////////////////
@@ -58,8 +57,24 @@ module decode_block(
             //////////////////////////////////////
             logic [WORD-1:0]  immediate_internal;
 
+            //////////////////////////////////////
+            //    SIGNALS FOR REG ADDRESSES     //
+            //////////////////////////////////////
+            logic [ADDR_WIDTH-1:0]  final_reg_2_addr_internal;
+            logic [ADDR_WIDTH-1:0]  final_reg_dest_addr_internal;
+
             always_comb begin
                pipeline_ctrl_sig_o = pipeline_ctrl_signal_internal;
+
+               if (reg_file_addr_2_source_internal == ADDR_FROM_INSTRUCTION)
+                  final_reg_2_addr_internal = reg_addr_2_from_addr_decoder;
+               else
+                  final_reg_2_addr_internal = reg_file_addr_o;
+               
+               if (reg_dest_addr_source_internal == ADDR_FROM_INSTRUCTION)
+                  final_reg_dest_addr_internal = reg_dest_addr_from_addr_decoder;
+               else
+                  final_reg_dest_addr_internal = reg_file_addr_o;
             end
 
             cpu_controller control_module(
@@ -77,8 +92,9 @@ module decode_block(
                                         .update_flag_o(update_flag_internal),
                                         .pipeline_ctrl_signal_o(pipeline_ctrl_signal_internal),
                                         .accumulator_imm_o(accumulator_imm_internal),
-                                        .reg_file_addr_2_o(reg_file_addr_2_from_ctrl_unit),
-                                        .reg_file_addr_2_source_o(reg_file_addr_2_source_internal)
+                                        .reg_file_addr_o(reg_file_addr_o),
+                                        .reg_file_addr_2_source_o(reg_file_addr_2_source_internal),
+                                        .reg_dest_addr_source_o(reg_dest_addr_source_internal)
                                        );
 
             reg_addr_decoder addr_decoder(
@@ -100,7 +116,7 @@ module decode_block(
                                        .clk_i(clk_i),
                                        .write_en_i(reg_file_write_en_i),
                                        .read_addr_1_i(reg_addr_1_from_addr_decoder),
-                                       .read_addr_2_i(reg_addr_2_from_addr_decoder),
+                                       .read_addr_2_i(final_reg_2_addr_internal),
                                        .write_addr_i(reg_dest_addr_from_addr_decoder),
                                        .reg_data_i(reg_data_i),
                                        .program_counter_i(program_counter_i),
@@ -125,8 +141,8 @@ module decode_block(
                                         .accumulator_imm_i(accumulator_imm_internal),
                                         .immediate_i(immediate_internal),
                                         .reg_1_source_addr_i(reg_addr_1_from_addr_decoder),
-                                        .reg_2_source_addr_i(reg_addr_2_from_addr_decoder),
-                                        .reg_dest_addr_i(reg_dest_addr_from_addr_decoder),
+                                        .reg_2_source_addr_i(final_reg_2_addr_internal),
+                                        .reg_dest_addr_i(final_reg_dest_addr_internal),
 
                                         .mem_write_en_o(mem_write_en_o),
                                         .mem_read_en_o(mem_read_en_o),

@@ -66,8 +66,9 @@ module cpu_controller(
                         output alu_control_signal       alu_control_signal_o,
                         output stall_pipeline_sig       pipeline_ctrl_signal_o,
                         output logic [4:0]              accumulator_imm_o,
-                        output logic [ADDR_WIDTH-1:0]   reg_file_addr_2_o,
-                        output reg_file_addr_2_source   reg_file_addr_2_source_o
+                        output logic [ADDR_WIDTH-1:0]   reg_file_addr_o,
+                        output reg_addr_data_source     reg_file_addr_2_source_o,
+                        output reg_addr_data_source     reg_dest_addr_source_o
                         );
 
     localparam FULL_REG_LIST = 16'hFF_FF;
@@ -105,8 +106,9 @@ module cpu_controller(
         alu_control_signal_o =      ALU_ADD;
         pipeline_ctrl_signal_o =    NO_STALL_PIPELINE;
         accumulator_imm_o =         'x;
-        reg_file_addr_2_o =         'x;
+        reg_file_addr_o =           'x;
         reg_file_addr_2_source_o =  ADDR_FROM_INSTRUCTION;
+        reg_dest_addr_source_o  =   ADDR_FROM_INSTRUCTION;
         new_sp_offset =             'x;
 
        casez(instruction_i.op)
@@ -145,7 +147,7 @@ module cpu_controller(
                                 alu_control_signal_o = ALU_SUB;
                                 reg_write_en_o = NO_REG_WRITE;
                     end       
-                    default: ;  // this is just here to ensure that there are no latches
+                    default: ;
                 endcase
             end
             DATA_PROCESSING: begin
@@ -235,10 +237,10 @@ module cpu_controller(
                         alu_input_2_select_o =      FROM_ACCUMULATOR;
                         mem_write_en_o =            pipeline_ctrl_signal_o;
                         if (pipeline_ctrl_signal_o) 
-                            reg_file_addr_2_o =     one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
+                            reg_file_addr_o =       one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
                         else begin
                             reg_write_en_o =        REG_WRITE;
-                            reg_file_addr_2_o =     SP_REG_NUM;
+                            reg_file_addr_o =       SP_REG_NUM;
                             accumulator_imm_o =     new_sp_offset;
                         end
                     end
@@ -247,14 +249,13 @@ module cpu_controller(
                         reg_list_from_instruction = {instruction_i[8],7'b0,instruction_i[7:0]};
                         pipeline_ctrl_signal_o =    (bit_count(reg_list_from_instruction & hold_counter) != 5'b0);
                         accumulator_imm_o =         4*accumulator;
-                        reg_file_addr_2_source_o =  ADDR_FROM_CTRL_UNIT;
+                        reg_dest_addr_source_o =    ADDR_FROM_CTRL_UNIT;
                         alu_input_2_select_o =      FROM_ACCUMULATOR;
                         reg_write_en_o =            REG_WRITE;
                         if (pipeline_ctrl_signal_o) 
-                            reg_file_addr_2_o =     one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
+                            reg_file_addr_o =       one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
                         else
-                            reg_file_addr_2_o =     SP_REG_NUM; 
-                            
+                            reg_file_addr_o =       SP_REG_NUM; 
                     end
                     default: ;
                 endcase
@@ -268,22 +269,22 @@ module cpu_controller(
                 mem_write_en_o =            pipeline_ctrl_signal_o;
                 reg_write_en_o =            ~pipeline_ctrl_signal_o;
                 if (pipeline_ctrl_signal_o) 
-                    reg_file_addr_2_o =     one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
+                    reg_file_addr_o =       one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
                 else
-                    reg_file_addr_2_o =     4'(instruction_i[10:8]);
+                    reg_file_addr_o =       4'(instruction_i[10:8]);
             end
             LOAD_MULT_REG: begin
                 reg_list_from_instruction = 16'(instruction_i[7:0]);
                 pipeline_ctrl_signal_o =    (bit_count(reg_list_from_instruction & hold_counter) != 5'b0);
                 accumulator_imm_o =         4*accumulator;
-                reg_file_addr_2_source_o =  ADDR_FROM_CTRL_UNIT;
+                reg_dest_addr_source_o =    ADDR_FROM_CTRL_UNIT;
                 alu_input_2_select_o =      FROM_ACCUMULATOR;
                 if (pipeline_ctrl_signal_o) begin
-                    reg_file_addr_2_o =     one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
+                    reg_file_addr_o =       one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
                     reg_write_en_o =        REG_WRITE;
                 end
                 else begin
-                    reg_file_addr_2_o =     4'(instruction_i[10:8]);
+                    reg_file_addr_o =       4'(instruction_i[10:8]);
                     reg_write_en_o =        (base_reg_in_list_status_sig == BASE_REG_NOT_IN_LIST);
                 end
             end
