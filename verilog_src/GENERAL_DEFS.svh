@@ -7,6 +7,9 @@
 	parameter HALF_WORD 	= 16;
 	parameter BYTE			= 8;
 	parameter ADDR_WIDTH 	= 4;
+	parameter SP_REG_NUM	= 13;
+	parameter LR_REG_NUM	= 14;
+	parameter PC_REG_NUM	= 15;
 
 	typedef enum logic [5:0] {
 		SHIFT_IMM		= 6'b00????,
@@ -63,18 +66,21 @@
 	parameter BIT_CLEAR			= 4'b1110;
 	parameter NOT				= 4'b1111;
 
+	// codes for special data instructions
+	parameter ADD_REG_SPECIAL = 4'b00??;
+
 	// codes for misc 16 bit instructions
-	parameter ADD_IMM_SP	= 7'b00000??;
-	parameter SUB_IMM_SP	= 7'b00001??;
-	parameter S_EXTEND_HW	= 7'b001000?;
-	parameter S_EXTEND_BYTE = 7'b001001?;
-	parameter U_EXTEND_HW	= 7'b001010?;
-	parameter U_EXTEND_BYTE = 7'b001011?;
-	parameter PUSH_MUL_REG	= 7'b010????;
-	parameter BYTE_REV_W	= 7'b101000?;
-	parameter BYTE_REV_HW	= 7'b101001?;
-	parameter BYTE_REV_S_HW = 7'b101011?;
-	parameter POP_MULT_REG	= 7'b110????;
+	parameter ADD_IMM_SP		= 7'b00000??;
+	parameter SUB_IMM_SP		= 7'b00001??;
+	parameter S_EXTEND_HW		= 7'b001000?;
+	parameter S_EXTEND_BYTE 	= 7'b001001?;
+	parameter UN_S_EXTEND_HW	= 7'b001010?;
+	parameter UN_S_EXTEND_BYTE 	= 7'b001011?;
+	parameter PUSH_MUL_REG		= 7'b010????;
+	parameter BYTE_REV_W		= 7'b101000?;
+	parameter BYTE_REV_P_HW		= 7'b101001?;
+	parameter BYTE_REV_S_HW 	= 7'b101011?;
+	parameter POP_MULT_REG		= 7'b110????;
 
 	typedef enum logic [2:0] {FROM_REG, FROM_IMM, FROM_PC, FROM_SP, 
 					FROM_ACCUMULATOR, FROM_ZERO} 						alu_input_source;
@@ -86,9 +92,11 @@
 	typedef enum logic {ADDR_FROM_INSTRUCTION, ADDR_FROM_CTRL_UNIT}		reg_file_addr_2_source;
 	typedef enum logic {NO_UPDATE_FLAG = 0, UPDATE_FLAG} 				update_flag_sig;
 
-	typedef enum logic [3:0]{ALU_LEFT_SHIFT_L, ALU_RIGHT_SHIFT_L, 
+	typedef enum logic [4:0]{ALU_LEFT_SHIFT_L, ALU_RIGHT_SHIFT_L, 
 		ALU_RIGHT_SHIFT_A, ALU_ADD, ALU_SUB, ALU_AND, ALU_OR, ALU_XOR,
-		ALU_ROTATE_R, ALU_MULT, ALU_NOT, ALU_BIT_CLEAR}					alu_control_signal;
+		ALU_ROTATE_R, ALU_MULT, ALU_NOT, ALU_BIT_CLEAR, ALU_S_EXTEND_HW,
+		ALU_S_EXTEND_BYTE, ALU_UN_S_EXTEND_HW, ALU_UN_S_EXTEND_BYTE, ALU_BYTE_REV_W,
+		ALU_BYTE_REV_P_HW, ALU_BYTE_REV_S_HW}							alu_control_signal;
 
 	// verilator lint_on UNUSED
 `endif

@@ -16,8 +16,6 @@ module clocked_reg_file(
                         );
 
     localparam NUM_REGS = 16;
-    localparam SP_REG_NUM = 13;
-    localparam PC_REG_NUM = 15;
 
     // signals used to forward data from write back stage to execution stage if 
     // reading from the register that was written to

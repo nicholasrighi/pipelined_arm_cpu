@@ -1,4 +1,4 @@
-TARGET=instruction_mem
+TARGET=cpu_controller
 
 build:
 	sv2v --write=adjacent *.sv

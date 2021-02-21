@@ -35,12 +35,16 @@ module decode_block(
             mem_read_signal         mem_read_en_internal;
             reg_file_write_sig      reg_file_write_en_internal;
             reg_file_data_source    reg_file_data_source_internal;   
-            alu_input_source         alu_input_1_select_internal;
-            alu_input_source         alu_input_2_select_internal;
-            alu_control_signal       alu_control_signal_internal;
-            update_flag_sig          update_flag_internal;
-            stall_pipeline_sig       pipeline_ctrl_signal_internal;
-            logic [4:0]              accumulator_imm_internal;
+            alu_input_source        alu_input_1_select_internal;
+            alu_input_source        alu_input_2_select_internal;
+            alu_control_signal      alu_control_signal_internal;
+            update_flag_sig         update_flag_internal;
+            stall_pipeline_sig      pipeline_ctrl_signal_internal;
+            // verilator lint_off UNUSED
+            reg_file_addr_2_source  reg_file_addr_2_source_internal;
+            logic [ADDR_WIDTH-1:0]  reg_file_addr_2_from_ctrl_unit;
+            // verilator lint_on UNUSED
+            logic [4:0]             accumulator_imm_internal;
 
             //////////////////////////////////////
             //    SIGNALS FROM ADDR DECODER     //
@@ -72,7 +76,9 @@ module decode_block(
                                         .alu_control_signal_o(alu_control_signal_internal),
                                         .update_flag_o(update_flag_internal),
                                         .pipeline_ctrl_signal_o(pipeline_ctrl_signal_internal),
-                                        .accumulator_imm_o(accumulator_imm_internal)
+                                        .accumulator_imm_o(accumulator_imm_internal),
+                                        .reg_file_addr_2_o(reg_file_addr_2_from_ctrl_unit),
+                                        .reg_file_addr_2_source_o(reg_file_addr_2_source_internal)
                                        );
 
             reg_addr_decoder addr_decoder(
