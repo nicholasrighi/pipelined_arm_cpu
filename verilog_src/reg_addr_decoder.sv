@@ -49,6 +49,56 @@ module reg_addr_decoder(
                 reg_addr_1_o =      PC_REG_NUM;
                 reg_dest_addr_o =   4'(instruction_i[10:8]);
             end
+            GEN_PC_REL: begin
+                reg_addr_1_o =      PC_REG_NUM;
+                reg_dest_addr_o =   4'(instruction_i[10:8]);
+            end
+            GEN_SP_REL: begin
+                reg_addr_1_o =      SP_REG_NUM;
+                reg_dest_addr_o =   4'(instruction_i[10:8]);
+            end
+            MIS_16_BIT: begin
+                casez(instruction_i[11:5])
+                    ADD_IMM_SP, 
+                    SUB_IMM_SP: begin
+                        reg_addr_1_o =      SP_REG_NUM;
+                        reg_dest_addr_o =   SP_REG_NUM; 
+                    end
+                    S_EXTEND_HW,
+                    S_EXTEND_BYTE,
+                    UN_S_EXTEND_HW,
+                    UN_S_EXTEND_BYTE,
+                    BYTE_REV_W,
+                    BYTE_REV_P_HW,
+                    BYTE_REV_S_HW: begin
+                        reg_addr_1_o =      4'(instruction_i[5:3]);
+                        reg_dest_addr_o =   4'(instruction_i[2:0]);
+                    end
+                    PUSH_MUL_REG,
+                    POP_MUL_REG: begin
+                        reg_addr_1_o =      SP_REG_NUM; 
+                        reg_dest_addr_o =   SP_REG_NUM;
+                    end
+                    default:    ;
+                endcase
+            end
+            LOAD_STORE_REG: begin
+                reg_addr_1_o =      4'(instruction_i[5:3]);
+                reg_addr_2_o =      4'(instruction_i[8:6]);
+                reg_dest_addr_o =   4'(instruction_i[2:0]);
+            end
+            LOAD_STORE_IMM,
+            LOAD_STORE_BYTE,
+            LOAD_STORE_HW: begin
+                reg_addr_1_o =      4'(instruction_i[5:3]);
+                reg_dest_addr_o =   4'(instruction_i[2:0]);
+            end 
+            LOAD_STORE_SP_R: begin
+                reg_addr_1_o =      SP_REG_NUM;
+                reg_dest_addr_o =   4'(instruction_i[10:8]); 
+            end
+            STORE_MULT_REG,
+            LOAD_MULT_REG: reg_addr_1_o =   4'(instruction_i[10:8]);
             default: ;
         endcase
     end
