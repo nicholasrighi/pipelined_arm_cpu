@@ -1,9 +1,6 @@
 `include "GENERAL_DEFS.svh"
 
 module decode_execution_register   
-                                   #(
-                                        parameter DATA_WIDTH = WORD
-                                   )
                                   (
                                     input logic                       clk_i,
                                     input logic                       reset_i,
@@ -15,11 +12,11 @@ module decode_execution_register
                                     input alu_input_source            alu_input_2_select_i,
                                     input alu_control_signal          alu_control_signal_i,
                                     input update_flag_sig             update_flag_i,
-                                    input logic [4:0]                 accumulator_imm_i,
                                     input logic [ADDR_WIDTH-1:0]      reg_1_source_addr_i,
                                     input logic [ADDR_WIDTH-1:0]      reg_2_source_addr_i,
                                     input logic [ADDR_WIDTH-1:0]      reg_dest_addr_i,
-                                    input logic [DATA_WIDTH-1:0]      immediate_i,
+                                    input logic [WORD-1:0]            immediate_i,
+                                    input logic [WORD-1:0]            accumulator_imm_i,
 
                                     output mem_write_signal           mem_write_en_o,
                                     output mem_read_signal            mem_read_en_o,
@@ -29,11 +26,11 @@ module decode_execution_register
                                     output alu_input_source           alu_input_2_select_o,
                                     output alu_control_signal         alu_control_signal_o,
                                     output update_flag_sig            update_flag_o,
-                                    output logic [4:0]                accumulator_imm_o,
                                     output logic [ADDR_WIDTH-1:0]     reg_1_source_addr_o,
                                     output logic [ADDR_WIDTH-1:0]     reg_2_source_addr_o,
                                     output logic [ADDR_WIDTH-1:0]     reg_dest_addr_o,
-                                    output logic [DATA_WIDTH-1:0]     immediate_o
+                                    output logic [WORD-1:0]           immediate_o,
+                                    output logic [WORD-1:0]           accumulator_imm_o
                                     );
 
     always_ff @(posedge clk_i) begin

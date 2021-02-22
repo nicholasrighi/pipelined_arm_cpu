@@ -14,9 +14,7 @@ module arm_cpu(
     //////////////////////////////////////
     //      INSTRUCTION MEMORY SIGNALS  //
     //////////////////////////////////////
-    // verilator lint_off UNUSED
     logic [HALF_WORD-1:0] instruction_FETCH_TO_DECODE;
-    // verilator lint_on UNUSED
 
     //////////////////////////////////////
     //      DECODE STAGE SIGNALS        //
@@ -31,10 +29,10 @@ module arm_cpu(
     alu_input_source        alu_input_2_select_DECODE_TO_EXE;
     update_flag_sig         update_flag_DECODE_TO_EXE;
     alu_control_signal      alu_control_signal_DECODE_TO_EXE;
-    logic [4:0]             accumulator_imm_DECODE_TO_EXE;
     logic [ADDR_WIDTH-1:0]  reg_1_source_addr_DECODE_TO_EXE;
     logic [ADDR_WIDTH-1:0]  reg_2_source_addr_DECODE_TO_EXE;
     logic [ADDR_WIDTH-1:0]  reg_dest_addr_DECODE_TO_EXE;
+    logic [WORD-1:0]        accumulator_imm_DECODE_TO_EXE;
     logic [WORD-1:0]        immediate_DECODE_TO_EXE;
     logic [WORD-1:0]        reg_1_data_DECODE_TO_EXE;
     logic [WORD-1:0]        reg_2_data_DECODE_TO_EXE;

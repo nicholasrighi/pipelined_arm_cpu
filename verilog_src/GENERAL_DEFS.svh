@@ -80,9 +80,9 @@
 	parameter BYTE_REV_W		= 7'b101000?;
 	parameter BYTE_REV_P_HW		= 7'b101001?;
 	parameter BYTE_REV_S_HW 	= 7'b101011?;
-	parameter POP_MULT_REG		= 7'b110????;
+	parameter POP_MUL_REG		= 7'b110????;
 
-	typedef enum logic [2:0] {FROM_REG, FROM_IMM, FROM_PC, FROM_SP, 
+	typedef enum logic [2:0] {FROM_REG, FROM_IMM,  
 					FROM_ACCUMULATOR, FROM_ZERO} 						alu_input_source;
 	typedef enum logic {FROM_ALU,FROM_MEMORY}							reg_file_data_source;
 	typedef enum logic {NO_MEM_WRITE = 0, MEM_WRITE}					mem_write_signal;

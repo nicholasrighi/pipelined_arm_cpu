@@ -17,10 +17,10 @@ module decode_block(
                         output alu_input_source       alu_input_2_select_o,
                         output stall_pipeline_sig     pipeline_ctrl_sig_o,
                         output alu_control_signal     alu_control_signal_o,
-                        output logic [4:0]            accumulator_imm_o,
                         output logic [ADDR_WIDTH-1:0] reg_1_source_addr_o,
                         output logic [ADDR_WIDTH-1:0] reg_2_source_addr_o,
                         output logic [ADDR_WIDTH-1:0] reg_dest_addr_o,
+                        output logic [WORD-1:0]       accumulator_imm_o,
                         output logic [WORD-1:0]       immediate_o,
                         output logic [WORD-1:0]       reg_1_data_o,
                         output logic [WORD-1:0]       reg_2_data_o,
@@ -43,7 +43,7 @@ module decode_block(
             reg_addr_data_source    reg_file_addr_2_source_internal;
             reg_addr_data_source    reg_dest_addr_source_internal;
             logic [ADDR_WIDTH-1:0]  reg_file_addr_o;
-            logic [4:0]             accumulator_imm_internal;
+            logic [WORD-1:0]             accumulator_imm_internal;
 
             //////////////////////////////////////
             //    SIGNALS FROM ADDR DECODER     //
