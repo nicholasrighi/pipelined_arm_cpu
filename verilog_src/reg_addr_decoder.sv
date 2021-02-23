@@ -102,7 +102,4 @@ module reg_addr_decoder(
             default: ;
         endcase
     end
-
-
-
 endmodule

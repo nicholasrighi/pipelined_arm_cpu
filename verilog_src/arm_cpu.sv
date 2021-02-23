@@ -37,7 +37,6 @@ module arm_cpu(
     logic [WORD-1:0]        reg_1_data_DECODE_TO_EXE;
     logic [WORD-1:0]        reg_2_data_DECODE_TO_EXE;
     logic [WORD-1:0]        program_counter_DECODE_TO_EXE;
-    logic [WORD-1:0]        stack_pointer_DECODE_TO_EXE;
     // verilator lint_on UNUSED
 
     //////////////////////////////////////
@@ -90,8 +89,7 @@ module arm_cpu(
                         .immediate_o(immediate_DECODE_TO_EXE),
                         .reg_1_data_o(reg_1_data_DECODE_TO_EXE),
                         .reg_2_data_o(reg_2_data_DECODE_TO_EXE),
-                        .program_counter_o(program_counter_DECODE_TO_EXE),
-                        .stack_pointer_o(stack_pointer_DECODE_TO_EXE)
+                        .program_counter_o(program_counter_DECODE_TO_EXE)
                         );
 
 endmodule

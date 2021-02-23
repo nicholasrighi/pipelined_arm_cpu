@@ -9,16 +9,10 @@ module instruction_mem(
                                 output logic [HALF_WORD-1:0] instruction_o
                                 );
 
-    localparam NUM_INSTRUCTIONS = 8192;
-
-    // Since we're in thumb mode, each instruction is 2 bytes, so we only store halfwords 
-    logic [HALF_WORD-1:0] instruction_ram [NUM_INSTRUCTIONS-1:0];
-
     // store pc so we can stall the pipeline when needed
     logic [WORD-1:0] stored_pc;
     logic [WORD-1:0] next_instruction_addr;
 
-    initial $readmemh("/home/nicholasrighi/EE_477/sim_data/instruction_mem.mem", instruction_ram);
 
     always_comb begin
        if (stall_pipeline_i)
@@ -27,14 +21,15 @@ module instruction_mem(
             next_instruction_addr = program_counter_i;
     end
 
-    always_ff @(posedge clk_i) begin
-        if (reset_i)
-            instruction_o <= instruction_ram[32'b0];
-        else if (stall_pipeline_i == NO_STALL_PIPELINE)
-            // Since we're in thumb mode we only divide by 2 to determine the relevant instruction
-            // to execute
-            instruction_o <= instruction_ram[next_instruction_addr/2];
-    end
+    instruction_ram ram(
+                        .clk_i(clk_i),
+                        .reset_i(reset_i),
+                        .write_en_i(1'b0),
+                        .instruction_addr_i(next_instruction_addr),
+                        .data_i('x),
+
+                        .instruction_o(instruction_o)
+                        );
 
     always_ff @(posedge clk_i) begin
             stored_pc <= program_counter_i;

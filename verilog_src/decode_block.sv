@@ -24,8 +24,7 @@ module decode_block(
                         output logic [WORD-1:0]       immediate_o,
                         output logic [WORD-1:0]       reg_1_data_o,
                         output logic [WORD-1:0]       reg_2_data_o,
-                        output logic [WORD-1:0]       program_counter_o,
-                        output logic [WORD-1:0]       stack_pointer_o
+                        output logic [WORD-1:0]       program_counter_o
                      );
 
             //////////////////////////////////////
@@ -123,8 +122,7 @@ module decode_block(
 
                                        .reg_data_1_o(reg_1_data_o),
                                        .reg_data_2_o(reg_2_data_o),
-                                       .program_counter_o(program_counter_o),
-                                       .stack_pointer_o(stack_pointer_o)
+                                       .program_counter_o(program_counter_o)
             );
 
             decode_execution_register decode_exe_reg(
