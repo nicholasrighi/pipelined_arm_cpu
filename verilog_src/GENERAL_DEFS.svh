@@ -82,7 +82,7 @@
 	parameter BYTE_REV_S_HW 	= 7'b101011?;
 	parameter POP_MUL_REG		= 7'b110????;
 
-	typedef enum logic [2:0] {FROM_REG, FROM_IMM,  
+	typedef enum logic [1:0] {FROM_REG, FROM_IMM,  
 					FROM_ACCUMULATOR, FROM_ZERO} 						alu_input_source;
 	typedef enum logic {FROM_ALU,FROM_MEMORY}							reg_file_data_source;
 	typedef enum logic {NO_MEM_WRITE = 0, MEM_WRITE}					mem_write_signal;
@@ -91,12 +91,20 @@
 	typedef enum logic {NO_STALL_PIPELINE = 0, STALL_PIPELINE}			stall_pipeline_sig;
 	typedef enum logic {ADDR_FROM_INSTRUCTION, ADDR_FROM_CTRL_UNIT}		reg_addr_data_source;
 	typedef enum logic {NO_UPDATE_FLAG = 0, UPDATE_FLAG} 				update_flag_sig;
+	typedef enum logic [1:0] {FROM_DECODE, FROM_MEM, FROM_WB}			forwarding_data_source;
 
 	typedef enum logic [4:0]{ALU_LEFT_SHIFT_L, ALU_RIGHT_SHIFT_L, 
 		ALU_RIGHT_SHIFT_A, ALU_ADD, ALU_SUB, ALU_AND, ALU_OR, ALU_XOR,
 		ALU_ROTATE_R, ALU_MULT, ALU_NOT, ALU_BIT_CLEAR, ALU_S_EXTEND_HW,
 		ALU_S_EXTEND_BYTE, ALU_UN_S_EXTEND_HW, ALU_UN_S_EXTEND_BYTE, ALU_BYTE_REV_W,
 		ALU_BYTE_REV_P_HW, ALU_BYTE_REV_S_HW}							alu_control_signal;
+
+	typedef struct packed {
+		logic negative_flag;
+		logic zero_flag;
+		logic carry_flag;
+		logic overflow_flag;
+	} status_register;
 
 	// verilator lint_on UNUSED
 `endif

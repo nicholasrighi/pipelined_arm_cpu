@@ -1,4 +1,4 @@
-TARGET=decode_block
+TARGET=alu
 
 build:
 	sv2v --write=adjacent *.sv

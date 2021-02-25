@@ -1,0 +1,44 @@
+`include "GENERAL_DEFS.svh"
+
+module execution_memory_register(
+                                input logic                 clk_i,
+                                input logic                 reset_i,
+                                input logic                 is_valid_i,
+                                input logic                 mem_write_en_i,
+                                input logic                 reg_file_write_en_i,
+                                input reg_file_data_source  reg_file_data_source_i,
+                                input logic [ADDR_WIDTH-1:0] reg_dest_addr_i, 
+                                input logic [WORD-1:0]      alu_result_i,
+                                input logic [WORD-1:0]      reg_2_data_i,
+
+                                output logic                 is_valid_o,
+                                output logic                 mem_write_en_o,
+                                output logic                 reg_file_write_en_o,
+                                output reg_file_data_source  reg_file_data_source_o,
+                                output logic [ADDR_WIDTH-1:0] reg_dest_addr_o,
+                                output logic [WORD-1:0]      alu_result_o,
+                                output logic [WORD-1:0]      reg_2_data_o
+                            );
+
+    always_ff @(posedge clk_i) begin
+       if (reset_i)  begin
+            is_valid_o              <= 1'b0;
+            mem_write_en_o          <= 'x;
+            reg_file_write_en_o     <= 'x;
+            reg_file_data_source_o  <= 'x;
+            alu_result_o            <= 'x;
+            reg_2_data_o            <= 'x;
+            reg_dest_addr_o         <= 'x;
+       end
+       else begin
+            is_valid_o              <= is_valid_i;
+            mem_write_en_o          <= mem_write_en_i;
+            reg_file_write_en_o     <= reg_file_write_en_i;
+            reg_file_data_source_o  <= reg_file_data_source_i;
+            alu_result_o            <= alu_result_i;
+            reg_2_data_o            <= reg_2_data_i;
+            reg_dest_addr_o         <= reg_dest_addr_i;
+       end
+    end
+
+endmodule

@@ -41,7 +41,8 @@ module instruction_mem(
         else 
             is_valid_o <= is_valid_i;
 
-        stored_pc <= instruction_addr_i;
+        if (stall_pipeline_i == NO_STALL_PIPELINE)
+            stored_pc <= instruction_addr_i;
     end
 
 endmodule

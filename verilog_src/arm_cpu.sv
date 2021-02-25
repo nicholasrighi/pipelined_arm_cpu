@@ -24,7 +24,6 @@ module arm_cpu(
     //////////////////////////////////////
     //      DECODE STAGE SIGNALS        //
     //////////////////////////////////////
-    // verilator lint_off UNUSED
     stall_pipeline_sig      pipeline_stall_FROM_DECODE;
     mem_write_signal        mem_write_en_DECODE_TO_EXE;
     mem_read_signal         mem_read_en_DECODE_TO_EXE;
@@ -42,15 +41,42 @@ module arm_cpu(
     logic [WORD-1:0]        immediate_DECODE_TO_EXE;
     logic [WORD-1:0]        reg_1_data_DECODE_TO_EXE;
     logic [WORD-1:0]        reg_2_data_DECODE_TO_EXE;
-    logic [WORD-1:0]        program_counter_DECODE_TO_EXE;
+    // verilator lint_off UNUSED
+    logic [WORD-1:0]        program_counter_DECODE_TO_EXE;  //TODO: check if this signal is needed?
     // verilator lint_on UNUSED
 
     //////////////////////////////////////
-    //      WB TO DECODE STAGE          //
+    //    EXECUTION STAGE SIGNALS       //
+    //////////////////////////////////////
+    // verilator lint_off UNUSED
+    logic                   is_valid_EXE_TO_MEM;
+    mem_read_signal         mem_read_en_EXE_TO_MEM;
+    mem_write_signal        mem_write_en_EXE_TO_MEM;
+    reg_file_write_sig      reg_file_write_en_EXE_TO_MEM;
+    reg_file_data_source    reg_file_data_source_EXE_TO_MEM;
+    logic [ADDR_WIDTH-1:0]  reg_dest_addr_EXE_TO_MEM;
+    logic [WORD-1:0]        alu_result_EXE_TO_MEM;
+    logic [WORD-1:0]        reg_2_data_EXE_TO_MEM;
+    // verilator lint_on UNUSED
+
+    //////////////////////////////////////
+    //     MEMORY STAGE SIGNALS         //
     //////////////////////////////////////
     // verilator lint_off UNDRIVEN
-    logic                   reg_file_write_en_WB_TO_DECODE;
-    logic [WORD-1:0]        reg_data_WB_TO_DECODE;
+    logic                  mem_write_en_FROM_MEM;
+    logic [ADDR_WIDTH-1:0] reg_dest_addr_FROM_MEM;
+    logic [WORD-1:0]       reg_data_FROM_MEM;
+    // verilator lint_off UNDRIVEN
+
+    //////////////////////////////////////
+    //      WB STAGE SIGNALS            //
+    //////////////////////////////////////
+    // verilator lint_off UNDRIVEN
+    logic                  mem_write_en_FROM_WB;
+    logic                  reg_file_write_en_WB_TO_DECODE;
+    logic [ADDR_WIDTH-1:0] reg_dest_addr_FROM_WB;
+    logic [WORD-1:0]       reg_data_FROM_WB;
+    logic [WORD-1:0]       reg_data_WB_TO_DECODE;
     // verilator lint_on UNDRIVEN
 
     always_comb begin
@@ -82,7 +108,6 @@ module arm_cpu(
                                 .instruction_o(instruction_FETCH_TO_DECODE)
                             );
 
-
     decode_block    d_block(
                         .clk_i(clk_i),
                         .reset_i(reset_i),
@@ -110,6 +135,42 @@ module arm_cpu(
                         .reg_1_data_o(reg_1_data_DECODE_TO_EXE),
                         .reg_2_data_o(reg_2_data_DECODE_TO_EXE),
                         .program_counter_o(program_counter_DECODE_TO_EXE)
+                        );
+
+    execution_block exe_block(
+                         .clk_i(clk_i),
+                         .reset_i(reset_i),
+                         .update_flag_i(update_flag_DECODE_TO_EXE),
+                         .mem_write_en_i(mem_write_en_DECODE_TO_EXE),
+                         .mem_read_en_i(mem_read_en_DECODE_TO_EXE),
+                         .reg_file_write_en_i(reg_file_write_en_DECODE_TO_EXE),
+                         .reg_file_data_source_i(reg_file_input_ctrl_sig_DECODE_TO_EXE),
+                         .alu_input_1_select_i(alu_input_1_select_DECODE_TO_EXE),
+                         .alu_input_2_select_i(alu_input_2_select_DECODE_TO_EXE),
+                         .alu_control_signal_i(alu_control_signal_DECODE_TO_EXE),
+                         .mem_write_en_MEM_i(mem_write_en_FROM_MEM),
+                         .mem_write_en_WB_i(mem_write_en_FROM_WB),
+                         .is_valid_i(is_valid_DECODE_TO_EXE),
+                         .reg_1_source_addr_i(reg_1_source_addr_DECODE_TO_EXE),
+                         .reg_2_source_addr_i(reg_2_source_addr_DECODE_TO_EXE),
+                         .reg_dest_addr_i(reg_dest_addr_DECODE_TO_EXE),
+                         .reg_dest_MEM_i(reg_dest_addr_FROM_MEM),
+                         .reg_dest_WB_i(reg_dest_addr_FROM_WB),
+                         .accumulator_imm_i(accumulator_imm_DECODE_TO_EXE),
+                         .immediate_i(immediate_DECODE_TO_EXE),
+                         .reg_1_data_i(reg_1_data_DECODE_TO_EXE),
+                         .reg_2_data_i(reg_2_data_DECODE_TO_EXE),
+                         .reg_data_MEM_i(reg_data_FROM_MEM),
+                         .reg_data_WB_i(reg_data_FROM_WB),
+                         
+                         .is_valid_o(is_valid_EXE_TO_MEM),
+                         .mem_read_en_o(mem_read_en_EXE_TO_MEM),
+                         .mem_write_en_o(mem_write_en_EXE_TO_MEM),
+                         .reg_file_write_en_o(reg_file_write_en_EXE_TO_MEM),
+                         .reg_file_data_source_o(reg_file_data_source_EXE_TO_MEM),
+                         .reg_dest_addr_o(reg_dest_addr_EXE_TO_MEM),
+                         .alu_result_o(alu_result_EXE_TO_MEM),
+                         .reg_2_data_o(reg_2_data_EXE_TO_MEM)
                         );
 
 endmodule

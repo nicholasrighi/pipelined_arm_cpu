@@ -37,14 +37,14 @@ module decode_execution_register
 
     always_ff @(posedge clk_i) begin
        if (reset_i) begin
-            mem_write_en_o              <= NO_MEM_WRITE;
-            mem_read_en_o               <= NO_MEM_READ;
-            reg_file_write_en_o         <= NO_REG_WRITE;
+            mem_write_en_o              <= 'x;
+            mem_read_en_o               <= 'x;
+            reg_file_write_en_o         <= 'x;
             reg_file_input_ctrl_sig_o   <= 'x;
             alu_input_1_select_o        <= 'x;
             alu_input_2_select_o        <= 'x;
             alu_control_signal_o        <= 'x;
-            update_flag_o               <= NO_UPDATE_FLAG;
+            update_flag_o               <= 'x;
             is_valid_o                  <= 1'b0;
             accumulator_imm_o           <= 'x;
             immediate_o                 <= 'x;

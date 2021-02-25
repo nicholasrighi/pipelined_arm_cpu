@@ -294,11 +294,14 @@ module cpu_controller(
                         accumulator_imm_o =         4*accumulator;
                         reg_dest_addr_source_o =    ADDR_FROM_CTRL_UNIT;
                         alu_input_2_select_o =      FROM_ACCUMULATOR;
-                        reg_write_en_o =            REG_WRITE;
-                        if (pipeline_ctrl_signal_o) 
+                        if (pipeline_ctrl_signal_o) begin
+                            reg_write_en_o =        REG_WRITE;
                             reg_file_addr_o =       one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
-                        else
+                        end
+                        else begin
                             reg_file_addr_o =       SP_REG_NUM; 
+                            reg_write_en_o =        reg_list_from_instruction[8];
+                        end
                     end
                     default: ;
                 endcase
