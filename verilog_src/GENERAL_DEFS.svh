@@ -84,12 +84,14 @@
 
 	typedef enum logic [1:0] {FROM_REG, FROM_IMM,  
 					FROM_ACCUMULATOR, FROM_ZERO} 						alu_input_source;
+					
 	typedef enum logic {FROM_ALU,FROM_MEMORY}							reg_file_data_source;
+	typedef enum logic {NO_REG_WRITE = 0, REG_WRITE}					reg_file_write_sig;
+	typedef enum logic {ADDR_FROM_INSTRUCTION, ADDR_FROM_CTRL_UNIT}		reg_addr_data_source;
+
 	typedef enum logic {NO_MEM_WRITE = 0, MEM_WRITE}					mem_write_signal;
 	typedef enum logic {NO_MEM_READ = 0, MEM_READ} 						mem_read_signal;
-	typedef enum logic {NO_REG_WRITE = 0, REG_WRITE}					reg_file_write_sig;
 	typedef enum logic {NO_STALL_PIPELINE = 0, STALL_PIPELINE}			stall_pipeline_sig;
-	typedef enum logic {ADDR_FROM_INSTRUCTION, ADDR_FROM_CTRL_UNIT}		reg_addr_data_source;
 	typedef enum logic {NO_UPDATE_FLAG = 0, UPDATE_FLAG} 				update_flag_sig;
 	typedef enum logic [1:0] {FROM_DECODE, FROM_MEM, FROM_WB}			forwarding_data_source;
 

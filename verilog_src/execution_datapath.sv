@@ -6,8 +6,8 @@ module execution_datapath(
                             input alu_control_signal        alu_ctrl_sig_i,
                             input alu_input_source          alu_input_1_select_i,
                             input alu_input_source          alu_input_2_select_i,
-                            input mem_write_signal          mem_write_en_MEM_i,
-                            input mem_write_signal          mem_write_en_WB_i,
+                            input reg_file_write_sig        reg_write_en_MEM_i,
+                            input reg_file_write_sig        reg_write_en_WB_i,
                             input logic [ADDR_WIDTH-1:0]    reg_addr_1_DECODE_i,
                             input logic [ADDR_WIDTH-1:0]    reg_addr_2_DECODE_i,
                             input logic [ADDR_WIDTH-1:0]    reg_dest_MEM_i,
@@ -19,7 +19,8 @@ module execution_datapath(
                             input logic [WORD-1:0]          accumulator_i,
                             input logic [WORD-1:0]          immediate_i,
 
-                            output logic [WORD-1:0]         alu_result_o
+                            output logic [WORD-1:0]         alu_result_o,
+                            output logic [WORD-1:0]         reg_2_data_o
                         );
 
         //////////////////////////////////////
@@ -35,7 +36,7 @@ module execution_datapath(
         logic [WORD-1:0] final_alu_reg_input_2_data_internal;
 
         // verilator lint_off UNUSED
-        status_register status_reg_internal;
+        status_register status_reg_internal;    //TODO. Need to use status register for cond. branching
         // verilator lint_on UNUSED
 
         // TODO. Need to implement outputting data from reg 2 as an output of the execution datapath, since we need it
@@ -58,11 +59,13 @@ module execution_datapath(
                 FROM_WB:        final_alu_reg_input_2_data_internal = reg_data_WB_i;
                 default: ;
             endcase
+
+            reg_2_data_o = final_alu_reg_input_2_data_internal;
         end
 
         alu_forwarder alu_forwarding_unit(
-                                            .write_en_MEM_i(mem_write_en_MEM_i),
-                                            .write_en_WB_i(mem_write_en_WB_i),
+                                            .reg_write_en_MEM_i(reg_write_en_MEM_i),
+                                            .reg_write_en_WB_i(reg_write_en_WB_i),
                                             .reg_1_addr_i(reg_addr_1_DECODE_i),
                                             .reg_2_addr_i(reg_addr_2_DECODE_i),
                                             .reg_dest_MEM_i(reg_dest_MEM_i),

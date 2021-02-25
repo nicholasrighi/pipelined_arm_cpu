@@ -36,38 +36,25 @@ module decode_execution_register
                                     );
 
     always_ff @(posedge clk_i) begin
-       if (reset_i) begin
-            mem_write_en_o              <= 'x;
-            mem_read_en_o               <= 'x;
-            reg_file_write_en_o         <= 'x;
-            reg_file_input_ctrl_sig_o   <= 'x;
-            alu_input_1_select_o        <= 'x;
-            alu_input_2_select_o        <= 'x;
-            alu_control_signal_o        <= 'x;
-            update_flag_o               <= 'x;
-            is_valid_o                  <= 1'b0;
-            accumulator_imm_o           <= 'x;
-            immediate_o                 <= 'x;
-            reg_1_source_addr_o         <= 'x;
-            reg_2_source_addr_o         <= 'x;
-            reg_dest_addr_o             <= 'x;
-       end 
-       else begin
-            mem_write_en_o              <= mem_write_en_i;
-            mem_read_en_o               <= mem_read_en_i;
-            reg_file_write_en_o         <= reg_file_write_en_i;
-            reg_file_input_ctrl_sig_o   <= reg_file_input_ctrl_sig_i;
-            alu_input_1_select_o        <= alu_input_1_select_i;
-            alu_input_2_select_o        <= alu_input_2_select_i;
-            alu_control_signal_o        <= alu_control_signal_i;
-            update_flag_o               <= update_flag_i;
-            is_valid_o                  <= is_valid_i;
-            accumulator_imm_o           <= accumulator_imm_i;
-            immediate_o                 <= immediate_i;
-            reg_1_source_addr_o         <= reg_1_source_addr_i;
-            reg_2_source_addr_o         <= reg_2_source_addr_i;
-            reg_dest_addr_o             <= reg_dest_addr_i;
-       end
+         if (reset_i) 
+               is_valid_o                  <= 1'b0;
+         else
+               is_valid_o                  <= is_valid_i;
+
+     mem_write_en_o              <= mem_write_en_i;
+     mem_read_en_o               <= mem_read_en_i;
+     reg_file_write_en_o         <= reg_file_write_en_i;
+     reg_file_input_ctrl_sig_o   <= reg_file_input_ctrl_sig_i;
+     alu_input_1_select_o        <= alu_input_1_select_i;
+     alu_input_2_select_o        <= alu_input_2_select_i;
+     alu_control_signal_o        <= alu_control_signal_i;
+     update_flag_o               <= update_flag_i;
+     is_valid_o                  <= is_valid_i;
+     accumulator_imm_o           <= accumulator_imm_i;
+     immediate_o                 <= immediate_i;
+     reg_1_source_addr_o         <= reg_1_source_addr_i;
+     reg_2_source_addr_o         <= reg_2_source_addr_i;
+     reg_dest_addr_o             <= reg_dest_addr_i;
     end
 
 endmodule

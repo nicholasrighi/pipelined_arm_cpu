@@ -7,6 +7,7 @@ module decode_block(
                                                                      //TODO. Need to also AND valid_i w/ the update flag signal, and all control signals in general
                                                                      //Actually it makes more sense to do the AND'ing when the signals are used
                         input logic             reg_file_write_en_i,
+                        input logic [ADDR_WIDTH-1:0] reg_dest_addr_i,
                         input instruction       instruction_i,
                         input logic [WORD-1:0]  reg_data_i,
                         input logic [WORD-1:0]  program_counter_i,
@@ -120,7 +121,7 @@ module decode_block(
                                        .write_en_i(reg_file_write_en_i),
                                        .read_addr_1_i(reg_addr_1_from_addr_decoder),
                                        .read_addr_2_i(final_reg_2_addr_internal),
-                                       .write_addr_i(reg_dest_addr_from_addr_decoder),
+                                       .write_addr_i(reg_dest_addr_i),
                                        .reg_data_i(reg_data_i),
                                        .program_counter_i(program_counter_i),
 

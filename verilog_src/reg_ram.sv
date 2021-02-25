@@ -12,11 +12,6 @@ module reg_ram(
                 output logic [WORD-1:0] reg_data_2_o
             );
 
-    initial begin
-       for (integer i = 0; i < REG_NUM; i++)
-        ram[i] = i;
-    end
-
     localparam REG_NUM = 16; 
 
     logic [WORD-1:0] ram [REG_NUM-1:0];

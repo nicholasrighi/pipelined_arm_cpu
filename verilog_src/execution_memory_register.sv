@@ -21,24 +21,17 @@ module execution_memory_register(
                             );
 
     always_ff @(posedge clk_i) begin
-       if (reset_i)  begin
-            is_valid_o              <= 1'b0;
-            mem_write_en_o          <= 'x;
-            reg_file_write_en_o     <= 'x;
-            reg_file_data_source_o  <= 'x;
-            alu_result_o            <= 'x;
-            reg_2_data_o            <= 'x;
-            reg_dest_addr_o         <= 'x;
-       end
-       else begin
-            is_valid_o              <= is_valid_i;
-            mem_write_en_o          <= mem_write_en_i;
-            reg_file_write_en_o     <= reg_file_write_en_i;
-            reg_file_data_source_o  <= reg_file_data_source_i;
-            alu_result_o            <= alu_result_i;
-            reg_2_data_o            <= reg_2_data_i;
-            reg_dest_addr_o         <= reg_dest_addr_i;
-       end
+          if (reset_i) 
+               is_valid_o        <= 1'b0;
+          else
+               is_valid_o              <= is_valid_i;
+
+          mem_write_en_o          <= mem_write_en_i;
+          reg_file_write_en_o     <= reg_file_write_en_i;
+          reg_file_data_source_o  <= reg_file_data_source_i;
+          alu_result_o            <= alu_result_i;
+          reg_2_data_o            <= reg_2_data_i;
+          reg_dest_addr_o         <= reg_dest_addr_i;
     end
 
 endmodule

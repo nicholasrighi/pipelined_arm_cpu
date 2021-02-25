@@ -1,8 +1,8 @@
 `include "GENERAL_DEFS.svh"
 
 module alu_forwarder(
-                        input mem_write_signal       write_en_MEM_i,
-                        input mem_write_signal       write_en_WB_i,
+                        input reg_file_write_sig     reg_write_en_MEM_i,
+                        input reg_file_write_sig     reg_write_en_WB_i,
                         input logic [ADDR_WIDTH-1:0] reg_1_addr_i,
                         input logic [ADDR_WIDTH-1:0] reg_2_addr_i,
                         input logic [ADDR_WIDTH-1:0] reg_dest_MEM_i,
@@ -13,16 +13,16 @@ module alu_forwarder(
                     );
 
     always_comb begin
-        if (reg_1_addr_i == reg_dest_MEM_i && (write_en_MEM_i == MEM_WRITE))
+        if (reg_1_addr_i == reg_dest_MEM_i && (reg_write_en_MEM_i == REG_WRITE))
             alu_input_1_ctrl_sig_o = FROM_MEM;
-        else if (reg_1_addr_i == reg_dest_WB_i && (write_en_WB_i == MEM_WRITE))
+        else if (reg_1_addr_i == reg_dest_WB_i && (reg_write_en_WB_i == REG_WRITE))
             alu_input_1_ctrl_sig_o = FROM_WB;
         else
             alu_input_1_ctrl_sig_o = FROM_DECODE;
 
-        if (reg_2_addr_i == reg_dest_MEM_i && (write_en_MEM_i == MEM_WRITE))
+        if (reg_2_addr_i == reg_dest_MEM_i && (reg_write_en_MEM_i == REG_WRITE))
             alu_input_2_ctrl_sig_o = FROM_MEM;
-        else if (reg_2_addr_i == reg_dest_WB_i && (write_en_WB_i == MEM_WRITE))
+        else if (reg_2_addr_i == reg_dest_WB_i && (reg_write_en_WB_i == REG_WRITE))
             alu_input_2_ctrl_sig_o = FROM_WB;
         else
             alu_input_2_ctrl_sig_o = FROM_DECODE;

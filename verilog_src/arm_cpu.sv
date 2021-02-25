@@ -8,6 +8,8 @@ module arm_cpu(
                 input logic [WORD-1:0]      instruction_addr_i
                 );
 
+    // TODO: Check that all control signals (all writes, reads, etc) are AND'd with is_valid
+
     //////////////////////////////////////
     //      PROGRAM COUNTER SIGNAL      //
     //////////////////////////////////////
@@ -48,36 +50,33 @@ module arm_cpu(
     //////////////////////////////////////
     //    EXECUTION STAGE SIGNALS       //
     //////////////////////////////////////
-    // verilator lint_off UNUSED
     logic                   is_valid_EXE_TO_MEM;
-    mem_read_signal         mem_read_en_EXE_TO_MEM;
+    // verilator lint_off UNUSED
+    mem_read_signal         mem_read_en_EXE_TO_MEM; //TODO: implement stalling on loads w/ this signal
+    // verilator lint_on UNUSED
     mem_write_signal        mem_write_en_EXE_TO_MEM;
     reg_file_write_sig      reg_file_write_en_EXE_TO_MEM;
     reg_file_data_source    reg_file_data_source_EXE_TO_MEM;
     logic [ADDR_WIDTH-1:0]  reg_dest_addr_EXE_TO_MEM;
     logic [WORD-1:0]        alu_result_EXE_TO_MEM;
     logic [WORD-1:0]        reg_2_data_EXE_TO_MEM;
-    // verilator lint_on UNUSED
 
     //////////////////////////////////////
     //     MEMORY STAGE SIGNALS         //
     //////////////////////////////////////
-    // verilator lint_off UNDRIVEN
-    logic                  mem_write_en_FROM_MEM;
-    logic [ADDR_WIDTH-1:0] reg_dest_addr_FROM_MEM;
-    logic [WORD-1:0]       reg_data_FROM_MEM;
-    // verilator lint_off UNDRIVEN
+    logic                  is_valid_MEM_TO_WB;
+    reg_file_data_source   reg_data_ctrl_sig_MEM_TO_WB;
+    reg_file_write_sig     reg_file_write_en_MEM_TO_WB;
+    logic [ADDR_WIDTH-1:0] reg_dest_addr_MEM_TO_WB;
+    logic [WORD-1:0]       mem_data_MEM_TO_WB;
+    logic [WORD-1:0]       alu_data_MEM_TO_WB;
 
     //////////////////////////////////////
     //      WB STAGE SIGNALS            //
     //////////////////////////////////////
-    // verilator lint_off UNDRIVEN
-    logic                  mem_write_en_FROM_WB;
     logic                  reg_file_write_en_WB_TO_DECODE;
-    logic [ADDR_WIDTH-1:0] reg_dest_addr_FROM_WB;
-    logic [WORD-1:0]       reg_data_FROM_WB;
+    logic [ADDR_WIDTH-1:0] reg_dest_addr_WB_TO_DECODE;
     logic [WORD-1:0]       reg_data_WB_TO_DECODE;
-    // verilator lint_on UNDRIVEN
 
     always_comb begin
         if (program_mem_write_en_i)
@@ -113,8 +112,9 @@ module arm_cpu(
                         .reset_i(reset_i),
                         .is_valid_i(is_valid_FETCH_TO_DECODE),
                         .reg_file_write_en_i(reg_file_write_en_WB_TO_DECODE),
-                        .instruction_i(instruction_FETCH_TO_DECODE),
                         .reg_data_i(reg_data_WB_TO_DECODE),
+                        .reg_dest_addr_i(reg_dest_addr_WB_TO_DECODE),
+                        .instruction_i(instruction_FETCH_TO_DECODE),
                         .program_counter_i(pc_TO_FETCH),
 
                         .mem_write_en_o(mem_write_en_DECODE_TO_EXE),
@@ -148,20 +148,20 @@ module arm_cpu(
                          .alu_input_1_select_i(alu_input_1_select_DECODE_TO_EXE),
                          .alu_input_2_select_i(alu_input_2_select_DECODE_TO_EXE),
                          .alu_control_signal_i(alu_control_signal_DECODE_TO_EXE),
-                         .mem_write_en_MEM_i(mem_write_en_FROM_MEM),
-                         .mem_write_en_WB_i(mem_write_en_FROM_WB),
+                         .reg_write_en_MEM_i(reg_file_write_en_EXE_TO_MEM), //the write enable signal that comes from MEM stage is the same one that leaves
+                         .reg_write_en_WB_i(reg_file_write_en_MEM_TO_WB),   //the EXE stage
                          .is_valid_i(is_valid_DECODE_TO_EXE),
                          .reg_1_source_addr_i(reg_1_source_addr_DECODE_TO_EXE),
                          .reg_2_source_addr_i(reg_2_source_addr_DECODE_TO_EXE),
                          .reg_dest_addr_i(reg_dest_addr_DECODE_TO_EXE),
-                         .reg_dest_MEM_i(reg_dest_addr_FROM_MEM),
-                         .reg_dest_WB_i(reg_dest_addr_FROM_WB),
+                         .reg_dest_MEM_i(reg_dest_addr_EXE_TO_MEM),   //this is the same as the reg_dest_addr that leaves the EXE stage
+                         .reg_dest_WB_i(reg_dest_addr_WB_TO_DECODE),
                          .accumulator_imm_i(accumulator_imm_DECODE_TO_EXE),
                          .immediate_i(immediate_DECODE_TO_EXE),
                          .reg_1_data_i(reg_1_data_DECODE_TO_EXE),
                          .reg_2_data_i(reg_2_data_DECODE_TO_EXE),
-                         .reg_data_MEM_i(reg_data_FROM_MEM),
-                         .reg_data_WB_i(reg_data_FROM_WB),
+                         .reg_data_MEM_i(alu_result_EXE_TO_MEM),             //TODO. check that this is the correct signal. It might need to be second reg data?
+                         .reg_data_WB_i(reg_data_WB_TO_DECODE),
                          
                          .is_valid_o(is_valid_EXE_TO_MEM),
                          .mem_read_en_o(mem_read_en_EXE_TO_MEM),
@@ -171,6 +171,39 @@ module arm_cpu(
                          .reg_dest_addr_o(reg_dest_addr_EXE_TO_MEM),
                          .alu_result_o(alu_result_EXE_TO_MEM),
                          .reg_2_data_o(reg_2_data_EXE_TO_MEM)
+                        );
+        
+    memory_block mem_block(
+                        .clk_i(clk_i),
+                        .reset_i(reset_i),
+                        .is_valid_i(is_valid_EXE_TO_MEM),
+                        .mem_write_en_i(mem_write_en_EXE_TO_MEM),
+                        .reg_data_ctrl_sig_i(reg_file_data_source_EXE_TO_MEM),
+                        .reg_file_write_en_i(reg_file_write_en_EXE_TO_MEM),
+                        .opA_opB_i('1), //TODO add pass through to all stages for opAopB
+                        .reg_dest_addr_i(reg_dest_addr_EXE_TO_MEM),
+                        .stored_mem_data_i(reg_2_data_EXE_TO_MEM),
+                        .alu_data_i(alu_result_EXE_TO_MEM),
+                        
+                        .is_valid_o(is_valid_MEM_TO_WB),
+                        .reg_data_ctrl_sig_o(reg_data_ctrl_sig_MEM_TO_WB),
+                        .reg_dest_addr_o(reg_dest_addr_MEM_TO_WB),
+                        .reg_file_write_en_o(reg_file_write_en_MEM_TO_WB),
+                        .mem_data_o(mem_data_MEM_TO_WB),
+                        .alu_data_o(alu_data_MEM_TO_WB)
+                        );
+
+    write_back_block wb_block(
+                        .is_valid_i(is_valid_MEM_TO_WB),
+                        .reg_data_ctrl_sig_i(reg_data_ctrl_sig_MEM_TO_WB),
+                        .reg_file_write_en_i(reg_file_write_en_MEM_TO_WB),
+                        .reg_dest_addr_i(reg_dest_addr_MEM_TO_WB),
+                        .alu_result_i(alu_data_MEM_TO_WB),
+                        .mem_data_i(mem_data_MEM_TO_WB),
+
+                        .reg_dest_addr_o(reg_dest_addr_WB_TO_DECODE),
+                        .reg_file_write_en_o(reg_file_write_en_WB_TO_DECODE),
+                        .reg_data_o(reg_data_WB_TO_DECODE)
                         );
 
 endmodule
