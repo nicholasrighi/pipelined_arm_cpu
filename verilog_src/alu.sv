@@ -23,9 +23,10 @@ always_comb begin
     extended_sum = 'x;
 
     case (alu_ctrl_sig_i)
-        ALU_LEFT_SHIFT_L:       alu_result_o = data_in_1_i << data_in_2_i;
-        ALU_RIGHT_SHIFT_L:      alu_result_o = data_in_1_i >> data_in_2_i;
-        ALU_RIGHT_SHIFT_A:      alu_result_o = data_in_1_i >>> data_in_2_i;
+        // all shift instructions only allow the bottom byte of data_in_2 to be used for the shift value
+        ALU_LEFT_SHIFT_L:       alu_result_o = data_in_1_i << data_in_2_i[BYTE-1:0];
+        ALU_RIGHT_SHIFT_L:      alu_result_o = data_in_1_i >> data_in_2_i[BYTE-1:0];
+        ALU_RIGHT_SHIFT_A:      alu_result_o = data_in_1_i >>> data_in_2_i[BYTE-1:0];
         ALU_ADD: begin                
                 extended_sum = {1'b0,data_in_1_i} + {1'b0, data_in_2_i};
                 alu_result_o = extended_sum[31:0];

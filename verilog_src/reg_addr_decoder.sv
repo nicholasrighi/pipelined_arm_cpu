@@ -41,9 +41,31 @@ module reg_addr_decoder(
                endcase 
             end
             DATA_PROCESSING: begin
-                reg_addr_1_o =      4'(instruction_i[2:0]);
+                if (instruction_i[9:6] == NOT)
+                   reg_addr_1_o =   4'(instruction_i[5:3]);
+                else
+                    reg_addr_1_o =  4'(instruction_i[2:0]);
+
                 reg_addr_2_o =      4'(instruction_i[5:3]);
                 reg_dest_addr_o =   4'(instruction_i[2:0]);
+            end
+            SPECIAL: begin
+                casez(instruction_i[9:6])
+                    ADD_REG_SPECIAL: begin
+                        reg_addr_1_o =  4'(instruction_i[2:0]);
+                        reg_addr_2_o =  4'(instruction_i[6:3]);  
+                        reg_dest_addr_o = {instruction_i[7],instruction_i[2:0]};
+                    end
+                    MOVE_REG_SPECIAL: begin
+                        reg_addr_1_o    = instruction_i[6:3];
+                        reg_dest_addr_o = {instruction_i[7], instruction_i[2:0]};
+                    end
+                    CMP_REG_SPECIAL: begin
+                       reg_addr_1_o = {instruction_i[7],instruction_i[2:0]};
+                       reg_addr_2_o = instruction_i[6:3];
+                    end
+                    default: ;
+                endcase
             end
             LOAD_LITERAL: begin
                 reg_addr_1_o =      PC_REG_NUM;

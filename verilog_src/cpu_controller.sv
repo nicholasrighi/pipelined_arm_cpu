@@ -226,8 +226,21 @@ module cpu_controller(
             // TODO: implement special instructions
             // TODO: check MOV (register) when using the SP. Need to branch in that case?
             SPECIAL: begin
-                case(instruction_i[9:6])
-
+                casez(instruction_i[9:6])
+                    ADD_REG_SPECIAL: begin
+                        alu_control_signal_o = ALU_ADD;
+                        reg_write_en_o       = REG_WRITE;
+                        update_flag_o        = UPDATE_FLAG;
+                    end
+                    MOVE_REG_SPECIAL: begin
+                        alu_control_signal_o = ALU_ADD;
+                        reg_write_en_o       = REG_WRITE;
+                        alu_input_2_select_o = FROM_ZERO;
+                    end
+                    CMP_REG_SPECIAL: begin
+                        alu_control_signal_o   = ALU_SUB;
+                        update_flag_o          = UPDATE_FLAG;
+                    end
                     default:    ;
                 endcase
             end

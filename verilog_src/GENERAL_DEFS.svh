@@ -1,14 +1,15 @@
 `ifndef GENERAL_DEFS_H
 `define GENERAL_DEFS_H
 
-	// verilator lint_off UNUSED
 	// size types
 	parameter WORD 			= 32;
 	parameter HALF_WORD 	= 16;
 	parameter BYTE			= 8;
 	parameter ADDR_WIDTH 	= 4;
 	parameter SP_REG_NUM	= 13;
+	// verilator lint_off UNUSED
 	parameter LR_REG_NUM	= 14;
+	// verilator lint_on UNUSED
 	parameter PC_REG_NUM	= 15;
 
 	typedef enum logic [5:0] {
@@ -67,7 +68,9 @@
 	parameter NOT				= 4'b1111;
 
 	// codes for special data instructions
-	parameter ADD_REG_SPECIAL = 4'b00??;
+	parameter ADD_REG_SPECIAL	= 4'b00??;
+	parameter MOVE_REG_SPECIAL  = 4'b10??;
+	parameter CMP_REG_SPECIAL	= 4'b011?;	//TODO: check if this is the only encoding of cmp register for special insturction
 
 	// codes for misc 16 bit instructions
 	parameter ADD_IMM_SP		= 7'b00000??;
@@ -108,5 +111,4 @@
 		logic overflow_flag;
 	} status_register;
 
-	// verilator lint_on UNUSED
 `endif
