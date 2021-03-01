@@ -13,6 +13,7 @@ module decode_execution_register
                                     input alu_control_signal          alu_control_signal_i,
                                     input update_flag_sig             update_flag_i,
                                     input logic                       is_valid_i,
+                                    input logic [6:0]                 opA_opB_i,
                                     input logic [ADDR_WIDTH-1:0]      reg_1_source_addr_i,
                                     input logic [ADDR_WIDTH-1:0]      reg_2_source_addr_i,
                                     input logic [ADDR_WIDTH-1:0]      reg_dest_addr_i,
@@ -28,6 +29,7 @@ module decode_execution_register
                                     output alu_control_signal         alu_control_signal_o,
                                     output update_flag_sig            update_flag_o,
                                     output logic                      is_valid_o,
+                                    output logic [6:0]                opA_opB_o,
                                     output logic [ADDR_WIDTH-1:0]     reg_1_source_addr_o,
                                     output logic [ADDR_WIDTH-1:0]     reg_2_source_addr_o,
                                     output logic [ADDR_WIDTH-1:0]     reg_dest_addr_o,
@@ -41,6 +43,7 @@ module decode_execution_register
          else
                is_valid_o                  <= is_valid_i;
 
+     opA_opB_o                   <= opA_opB_i;
      mem_write_en_o              <= mem_write_en_i;
      mem_read_en_o               <= mem_read_en_i;
      reg_file_write_en_o         <= reg_file_write_en_i;

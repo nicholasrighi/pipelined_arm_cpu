@@ -113,6 +113,11 @@ module reg_addr_decoder(
             LOAD_STORE_BYTE,
             LOAD_STORE_HW: begin
                 reg_addr_1_o =      4'(instruction_i[5:3]);
+                casez(instruction_i[11:9])
+                    STORE_REG_IMM_OFFSET: reg_addr_2_o =    4'(instruction_i[2:0]);
+                    LOAD_REG_IMM_OFFSET:  reg_dest_addr_o = 4'(instruction_i[2:0]); 
+                    default: ;
+                endcase
                 reg_dest_addr_o =   4'(instruction_i[2:0]);
             end 
             LOAD_STORE_SP_R: begin

@@ -14,18 +14,18 @@ module alu_forwarder(
 
     always_comb begin
         if (reg_1_addr_i == reg_dest_MEM_i && (reg_write_en_MEM_i == REG_WRITE))
-            alu_input_1_ctrl_sig_o = FROM_MEM;
+            alu_input_1_ctrl_sig_o = FORWARD_FROM_MEM;
         else if (reg_1_addr_i == reg_dest_WB_i && (reg_write_en_WB_i == REG_WRITE))
-            alu_input_1_ctrl_sig_o = FROM_WB;
+            alu_input_1_ctrl_sig_o = FORWARD_FROM_WB;
         else
-            alu_input_1_ctrl_sig_o = FROM_DECODE;
+            alu_input_1_ctrl_sig_o = FORWARD_FROM_DECODE;
 
         if (reg_2_addr_i == reg_dest_MEM_i && (reg_write_en_MEM_i == REG_WRITE))
-            alu_input_2_ctrl_sig_o = FROM_MEM;
+            alu_input_2_ctrl_sig_o = FORWARD_FROM_MEM;
         else if (reg_2_addr_i == reg_dest_WB_i && (reg_write_en_WB_i == REG_WRITE))
-            alu_input_2_ctrl_sig_o = FROM_WB;
+            alu_input_2_ctrl_sig_o = FORWARD_FROM_WB;
         else
-            alu_input_2_ctrl_sig_o = FROM_DECODE;
+            alu_input_2_ctrl_sig_o = FORWARD_FROM_DECODE;
     end
 
 endmodule

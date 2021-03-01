@@ -1,16 +1,17 @@
 `include "GENERAL_DEFS.svh"
 
 module decode_block(
-                        input logic             clk_i,
-                        input logic             reset_i,
-                        input logic             is_valid_i,          //TODO. Need to AND is valid_i w/ ~flush_pipeline signal when we implement branching
+                        input logic                   clk_i,
+                        input logic                   reset_i,
+                        input logic                   is_valid_i,          //TODO. Need to AND is valid_i w/ ~flush_pipeline signal when we implement branching
                                                                      //TODO. Need to also AND valid_i w/ the update flag signal, and all control signals in general
                                                                      //Actually it makes more sense to do the AND'ing when the signals are used
-                        input logic             reg_file_write_en_i,
-                        input logic [ADDR_WIDTH-1:0] reg_dest_addr_i,
-                        input instruction       instruction_i,
-                        input logic [WORD-1:0]  reg_data_i,
-                        input logic [WORD-1:0]  program_counter_i,
+                        input logic                   reg_file_write_en_i,
+                        input mem_read_signal         mem_read_EXE_i,
+                        input logic [ADDR_WIDTH-1:0]  reg_dest_addr_i,
+                        input instruction             instruction_i,
+                        input logic [WORD-1:0]        reg_data_i,
+                        input logic [WORD-1:0]        program_counter_i,
 
                         output update_flag_sig        update_flag_o,
                         output mem_write_signal       mem_write_en_o,
@@ -22,6 +23,7 @@ module decode_block(
                         output stall_pipeline_sig     pipeline_ctrl_sig_o,
                         output alu_control_signal     alu_control_signal_o,
                         output logic                  is_valid_o,
+                        output logic [6:0]            opA_opB_o,
                         output logic [ADDR_WIDTH-1:0] reg_1_source_addr_o,
                         output logic [ADDR_WIDTH-1:0] reg_2_source_addr_o,
                         output logic [ADDR_WIDTH-1:0] reg_dest_addr_o,
@@ -37,13 +39,14 @@ module decode_block(
             //////////////////////////////////////
             mem_write_signal        mem_write_en_internal;
             mem_read_signal         mem_read_en_internal;
+            is_valid_sig            is_valid_from_controller_internal;
             reg_file_write_sig      reg_file_write_en_internal;
             reg_file_data_source    reg_file_data_source_internal;   
             alu_input_source        alu_input_1_select_internal;
             alu_input_source        alu_input_2_select_internal;
             alu_control_signal      alu_control_signal_internal;
             update_flag_sig         update_flag_internal;
-            stall_pipeline_sig      pipeline_ctrl_signal_internal;
+            stall_pipeline_sig      stall_pipeline_controller_internal;
             reg_addr_data_source    reg_file_addr_2_source_internal;
             reg_addr_data_source    reg_dest_addr_source_internal;
             logic [ADDR_WIDTH-1:0]  reg_file_addr_o;
@@ -67,8 +70,24 @@ module decode_block(
             logic [ADDR_WIDTH-1:0]  final_reg_2_addr_internal;
             logic [ADDR_WIDTH-1:0]  final_reg_dest_addr_internal;
 
+            //////////////////////////////////////
+            //    SIGNALS FROM HAZARD DETECTOR  //
+            //////////////////////////////////////
+            stall_pipeline_sig stall_pipeline_hazard_internal;
+
+            //////////////////////////////////////
+            //    INTERNAL ONLY LOGIC SIGNALS   //
+            //////////////////////////////////////
+            is_valid_sig   final_is_valid_internal;
+
             always_comb begin
-               pipeline_ctrl_sig_o = pipeline_ctrl_signal_internal;
+
+               // if the current values being evaluated aren't valid, then the controller and hazard detectors 
+               // is valid signals aren't relevant. We always need to AND the is_valid_i signal with any control logic that 
+               // is used 
+               final_is_valid_internal = is_valid_i & is_valid_from_controller_internal & stall_pipeline_hazard_internal;
+
+               pipeline_ctrl_sig_o = (is_valid_o & (stall_pipeline_hazard_internal | stall_pipeline_controller_internal));
 
                if (reg_file_addr_2_source_internal == ADDR_FROM_INSTRUCTION)
                   final_reg_2_addr_internal = reg_addr_2_from_addr_decoder;
@@ -81,6 +100,15 @@ module decode_block(
                   final_reg_dest_addr_internal = reg_file_addr_o;
             end
 
+            hazard_detector haz_detect(
+                                       .mem_read_EXE_i(mem_read_EXE_i),
+                                       .dest_addr_reg_EXE_i(final_reg_dest_addr_internal),
+                                       .source_reg_1_DECODE_i(reg_addr_1_from_addr_decoder),
+                                       .source_reg_2_DECODE_i(final_reg_2_addr_internal),
+                                       
+                                       .stall_pipeline_o(stall_pipeline_hazard_internal)
+                                       );
+
             cpu_controller control_module(
                                         .clk_i(clk_i),
                                         .reset_i(reset_i),
@@ -88,13 +116,14 @@ module decode_block(
 
                                         .mem_write_en_o(mem_write_en_internal),
                                         .mem_read_en_o(mem_read_en_internal),
+                                        .is_valid_o(is_valid_from_controller_internal),
                                         .reg_write_en_o(reg_file_write_en_internal),
                                         .reg_file_data_source_o(reg_file_data_source_internal),
                                         .alu_input_1_select_o(alu_input_1_select_internal),
                                         .alu_input_2_select_o(alu_input_2_select_internal),
                                         .alu_control_signal_o(alu_control_signal_internal),
                                         .update_flag_o(update_flag_internal),
-                                        .pipeline_ctrl_signal_o(pipeline_ctrl_signal_internal),
+                                        .pipeline_ctrl_signal_o(stall_pipeline_controller_internal),
                                         .accumulator_imm_o(accumulator_imm_internal),
                                         .reg_file_addr_o(reg_file_addr_o),
                                         .reg_file_addr_2_source_o(reg_file_addr_2_source_internal),
@@ -142,6 +171,7 @@ module decode_block(
                                         .alu_control_signal_i(alu_control_signal_internal),
                                         .update_flag_i(update_flag_internal),
                                         .is_valid_i(is_valid_i),
+                                        .opA_opB_i(instruction_i[HALF_WORD-1:9]),
                                         .accumulator_imm_i(accumulator_imm_internal),
                                         .immediate_i(immediate_internal),
                                         .reg_1_source_addr_i(reg_addr_1_from_addr_decoder),
@@ -157,6 +187,7 @@ module decode_block(
                                         .alu_control_signal_o(alu_control_signal_o),
                                         .update_flag_o(update_flag_o),
                                         .is_valid_o(is_valid_o),
+                                        .opA_opB_o(opA_opB_o),
                                         .accumulator_imm_o(accumulator_imm_o),
                                         .immediate_o(immediate_o),
                                         .reg_1_source_addr_o(reg_1_source_addr_o),

@@ -47,16 +47,16 @@ module execution_datapath(
             final_alu_reg_input_2_data_internal = 'x;
 
             case(reg_1_ctrl_sig_internal)
-                FROM_DECODE:    final_alu_reg_input_1_data_internal = reg_data_1_DECODE_i;
-                FROM_MEM:       final_alu_reg_input_1_data_internal = reg_data_MEM_i;
-                FROM_WB:        final_alu_reg_input_1_data_internal = reg_data_WB_i;
+                FORWARD_FROM_DECODE:    final_alu_reg_input_1_data_internal = reg_data_1_DECODE_i;
+                FORWARD_FROM_MEM:       final_alu_reg_input_1_data_internal = reg_data_MEM_i;
+                FORWARD_FROM_WB:        final_alu_reg_input_1_data_internal = reg_data_WB_i;
                 default: ;
             endcase
 
             case(reg_2_ctrl_sig_internal)
-                FROM_DECODE:    final_alu_reg_input_2_data_internal = reg_data_2_DECODE_i;
-                FROM_MEM:       final_alu_reg_input_2_data_internal = reg_data_MEM_i;
-                FROM_WB:        final_alu_reg_input_2_data_internal = reg_data_WB_i;
+                FORWARD_FROM_DECODE:    final_alu_reg_input_2_data_internal = reg_data_2_DECODE_i;
+                FORWARD_FROM_MEM:       final_alu_reg_input_2_data_internal = reg_data_MEM_i;
+                FORWARD_FROM_WB:        final_alu_reg_input_2_data_internal = reg_data_WB_i;
                 default: ;
             endcase
 

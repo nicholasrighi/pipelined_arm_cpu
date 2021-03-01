@@ -36,6 +36,7 @@ module arm_cpu(
     update_flag_sig         update_flag_DECODE_TO_EXE;
     alu_control_signal      alu_control_signal_DECODE_TO_EXE;
     logic                   is_valid_DECODE_TO_EXE;
+    logic [6:0]             opA_opB_DECODE_TO_EXE;
     logic [ADDR_WIDTH-1:0]  reg_1_source_addr_DECODE_TO_EXE;
     logic [ADDR_WIDTH-1:0]  reg_2_source_addr_DECODE_TO_EXE;
     logic [ADDR_WIDTH-1:0]  reg_dest_addr_DECODE_TO_EXE;
@@ -51,12 +52,10 @@ module arm_cpu(
     //    EXECUTION STAGE SIGNALS       //
     //////////////////////////////////////
     logic                   is_valid_EXE_TO_MEM;
-    // verilator lint_off UNUSED
-    mem_read_signal         mem_read_en_EXE_TO_MEM; //TODO: implement stalling on loads w/ this signal
-    // verilator lint_on UNUSED
     mem_write_signal        mem_write_en_EXE_TO_MEM;
     reg_file_write_sig      reg_file_write_en_EXE_TO_MEM;
     reg_file_data_source    reg_file_data_source_EXE_TO_MEM;
+    logic [6:0]             opA_opB_EXE_TO_MEM;
     logic [ADDR_WIDTH-1:0]  reg_dest_addr_EXE_TO_MEM;
     logic [WORD-1:0]        alu_result_EXE_TO_MEM;
     logic [WORD-1:0]        reg_2_data_EXE_TO_MEM;
@@ -111,6 +110,7 @@ module arm_cpu(
                         .clk_i(clk_i),
                         .reset_i(reset_i),
                         .is_valid_i(is_valid_FETCH_TO_DECODE),
+                        .mem_read_EXE_i(mem_read_en_DECODE_TO_EXE),
                         .reg_file_write_en_i(reg_file_write_en_WB_TO_DECODE),
                         .reg_data_i(reg_data_WB_TO_DECODE),
                         .reg_dest_addr_i(reg_dest_addr_WB_TO_DECODE),
@@ -127,6 +127,7 @@ module arm_cpu(
                         .update_flag_o(update_flag_DECODE_TO_EXE),
                         .pipeline_ctrl_sig_o(pipeline_stall_FROM_DECODE),
                         .is_valid_o(is_valid_DECODE_TO_EXE),
+                        .opA_opB_o(opA_opB_DECODE_TO_EXE),
                         .accumulator_imm_o(accumulator_imm_DECODE_TO_EXE),
                         .reg_1_source_addr_o(reg_1_source_addr_DECODE_TO_EXE),
                         .reg_2_source_addr_o(reg_2_source_addr_DECODE_TO_EXE),
@@ -142,7 +143,6 @@ module arm_cpu(
                          .reset_i(reset_i),
                          .update_flag_i(update_flag_DECODE_TO_EXE),
                          .mem_write_en_i(mem_write_en_DECODE_TO_EXE),
-                         .mem_read_en_i(mem_read_en_DECODE_TO_EXE),
                          .reg_file_write_en_i(reg_file_write_en_DECODE_TO_EXE),
                          .reg_file_data_source_i(reg_file_input_ctrl_sig_DECODE_TO_EXE),
                          .alu_input_1_select_i(alu_input_1_select_DECODE_TO_EXE),
@@ -151,6 +151,7 @@ module arm_cpu(
                          .reg_write_en_MEM_i(reg_file_write_en_EXE_TO_MEM), //the write enable signal that comes from MEM stage is the same one that leaves
                          .reg_write_en_WB_i(reg_file_write_en_MEM_TO_WB),   //the EXE stage
                          .is_valid_i(is_valid_DECODE_TO_EXE),
+                         .opA_opB_i(opA_opB_DECODE_TO_EXE),
                          .reg_1_source_addr_i(reg_1_source_addr_DECODE_TO_EXE),
                          .reg_2_source_addr_i(reg_2_source_addr_DECODE_TO_EXE),
                          .reg_dest_addr_i(reg_dest_addr_DECODE_TO_EXE),
@@ -164,8 +165,8 @@ module arm_cpu(
                          .reg_data_WB_i(reg_data_WB_TO_DECODE),
                          
                          .is_valid_o(is_valid_EXE_TO_MEM),
-                         .mem_read_en_o(mem_read_en_EXE_TO_MEM),
                          .mem_write_en_o(mem_write_en_EXE_TO_MEM),
+                         .opA_opB_o(opA_opB_EXE_TO_MEM),
                          .reg_file_write_en_o(reg_file_write_en_EXE_TO_MEM),
                          .reg_file_data_source_o(reg_file_data_source_EXE_TO_MEM),
                          .reg_dest_addr_o(reg_dest_addr_EXE_TO_MEM),
@@ -180,7 +181,7 @@ module arm_cpu(
                         .mem_write_en_i(mem_write_en_EXE_TO_MEM),
                         .reg_data_ctrl_sig_i(reg_file_data_source_EXE_TO_MEM),
                         .reg_file_write_en_i(reg_file_write_en_EXE_TO_MEM),
-                        .opA_opB_i('1), //TODO add pass through to all stages for opAopB
+                        .opA_opB_i(opA_opB_EXE_TO_MEM), 
                         .reg_dest_addr_i(reg_dest_addr_EXE_TO_MEM),
                         .stored_mem_data_i(reg_2_data_EXE_TO_MEM),
                         .alu_data_i(alu_result_EXE_TO_MEM),

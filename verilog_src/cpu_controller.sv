@@ -91,6 +91,7 @@ module cpu_controller(
                         input instruction               instruction_i,
 
                         output update_flag_sig          update_flag_o,
+                        output is_valid_sig             is_valid_o,
                         output mem_write_signal         mem_write_en_o,
                         output mem_read_signal          mem_read_en_o,
                         output reg_file_write_sig       reg_write_en_o,
@@ -133,6 +134,7 @@ module cpu_controller(
         reg_list_from_instruction =     'x;
 
         // set defaults for output signals
+        is_valid_o =                IS_VALID;
         update_flag_o =             NO_UPDATE_FLAG; 
         mem_write_en_o =            NO_MEM_WRITE;
         mem_read_en_o  =            NO_MEM_READ;
@@ -251,7 +253,10 @@ module cpu_controller(
                 alu_input_2_select_o = FROM_IMM;
             end
             LOAD_STORE_REG: begin
-                if (instruction_i[11] || instruction_i[10:9] == 2'b11)
+                reg_file_data_source_o = FROM_MEMORY;
+                // load instructions have the below condition. If it's not a load it's a store,
+                // so we need to write to mem instead
+                if (instruction_i[11] || (instruction_i[10:9] == 2'b11)) 
                     reg_write_en_o =   REG_WRITE;
                 else
                     mem_write_en_o =   MEM_WRITE;
@@ -260,7 +265,8 @@ module cpu_controller(
             LOAD_STORE_BYTE,
             LOAD_STORE_HW,
             LOAD_STORE_SP_R: begin
-                alu_input_2_select_o = FROM_IMM;
+                alu_input_2_select_o =   FROM_IMM;
+                reg_file_data_source_o = FROM_MEMORY;
                 if (instruction_i[11])
                     reg_write_en_o =   REG_WRITE; 
                 else 
@@ -355,7 +361,7 @@ module cpu_controller(
             end
             COND_BRANCH: ;
             UNCOND_BRANCH: ;
-            default: ;
+            default: is_valid_o = NO_IS_VALID;
        endcase 
     end
 
