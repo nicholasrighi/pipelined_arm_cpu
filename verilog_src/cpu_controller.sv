@@ -100,10 +100,11 @@ module cpu_controller(
                         output alu_input_source         alu_input_2_select_o,
                         output alu_control_signal       alu_control_signal_o,
                         output stall_pipeline_sig       pipeline_ctrl_signal_o,
-                        output logic [WORD-1:0]         accumulator_imm_o,
-                        output logic [ADDR_WIDTH-1:0]   reg_file_addr_o,
                         output reg_addr_data_source     reg_file_addr_2_source_o,
-                        output reg_addr_data_source     reg_dest_addr_source_o
+                        output reg_addr_data_source     reg_dest_addr_source_o,
+                        output reg_2_reg_3_select_sig   reg_2_reg_3_select_sig_o,
+                        output logic [WORD-1:0]         accumulator_imm_o,
+                        output logic [ADDR_WIDTH-1:0]   reg_file_addr_o
                         );
 
     localparam FULL_REG_LIST = 16'hFF_FF;
@@ -149,6 +150,7 @@ module cpu_controller(
         reg_file_addr_2_source_o =  ADDR_FROM_INSTRUCTION;
         reg_dest_addr_source_o  =   ADDR_FROM_INSTRUCTION;
         new_sp_offset =             'x;
+        reg_2_reg_3_select_sig_o =  SELECT_REG_2;
         reverse_order_hold_counter = NO_REV_LOAD_COUNTER;
 
        casez(instruction_i.op)
@@ -225,8 +227,9 @@ module cpu_controller(
                     default: ;
                 endcase
             end
-            // TODO: implement special instructions
             // TODO: check MOV (register) when using the SP. Need to branch in that case?
+            // TODO: Implement branching special instructions
+            // TODO: check jumping when adding w/ dest reg = PC
             SPECIAL: begin
                 casez(instruction_i[9:6])
                     ADD_REG_SPECIAL: begin
@@ -240,8 +243,8 @@ module cpu_controller(
                         alu_input_2_select_o = FROM_ZERO;
                     end
                     CMP_REG_SPECIAL: begin
-                        alu_control_signal_o   = ALU_SUB;
-                        update_flag_o          = UPDATE_FLAG;
+                        alu_control_signal_o  = ALU_SUB;
+                        update_flag_o         = UPDATE_FLAG;
                     end
                     default:    ;
                 endcase
@@ -249,28 +252,33 @@ module cpu_controller(
             // TODO: check PC alignement? Seems to need to be aligned to an offset of 4, which requries removing the last 2 bits
             // even though the PC can be any multiple of 2
             LOAD_LITERAL: begin
+                mem_read_en_o =        MEM_READ;
                 reg_write_en_o =       REG_WRITE;
                 alu_input_2_select_o = FROM_IMM;
             end
             LOAD_STORE_REG: begin
+                mem_read_en_o =          MEM_READ;
                 reg_file_data_source_o = FROM_MEMORY;
                 // load instructions have the below condition. If it's not a load it's a store,
                 // so we need to write to mem instead
                 if (instruction_i[11] || (instruction_i[10:9] == 2'b11)) 
                     reg_write_en_o =   REG_WRITE;
-                else
+                else begin
                     mem_write_en_o =   MEM_WRITE;
+                    reg_2_reg_3_select_sig_o = SELECT_REG_3;
+                end
             end
             LOAD_STORE_IMM, 
             LOAD_STORE_BYTE,
             LOAD_STORE_HW,
             LOAD_STORE_SP_R: begin
+                mem_read_en_o =          MEM_READ;
                 alu_input_2_select_o =   FROM_IMM;
                 reg_file_data_source_o = FROM_MEMORY;
                 if (instruction_i[11])
-                    reg_write_en_o =   REG_WRITE; 
+                    reg_write_en_o =     REG_WRITE; 
                 else 
-                    mem_write_en_o =   MEM_WRITE;
+                    mem_write_en_o =     MEM_WRITE;
             end
             GEN_PC_REL, 
             GEN_SP_REL: begin
@@ -279,9 +287,16 @@ module cpu_controller(
             end
             MIS_16_BIT: begin
                 update_flag_o = NO_UPDATE_FLAG;
+                reg_write_en_o = REG_WRITE;
                 casez(instruction_i[11:5])
-                    ADD_IMM_SP:         alu_control_signal_o = ALU_ADD; 
-                    SUB_IMM_SP:         alu_control_signal_o = ALU_SUB;
+                    ADD_IMM_SP: begin        
+                        alu_control_signal_o = ALU_ADD; 
+                        alu_input_2_select_o = FROM_IMM;
+                    end
+                    SUB_IMM_SP: begin
+                        alu_control_signal_o = ALU_SUB;
+                        alu_input_2_select_o = FROM_IMM;
+                    end
                     S_EXTEND_HW:        alu_control_signal_o = ALU_S_EXTEND_HW; 
                     S_EXTEND_BYTE:      alu_control_signal_o = ALU_S_EXTEND_BYTE;
                     UN_S_EXTEND_HW:     alu_control_signal_o = ALU_UN_S_EXTEND_HW;
@@ -298,8 +313,10 @@ module cpu_controller(
                         reg_file_addr_2_source_o =  ADDR_FROM_CTRL_UNIT;
                         alu_input_2_select_o =      FROM_ACCUMULATOR;
                         mem_write_en_o =            pipeline_ctrl_signal_o;
-                        if (pipeline_ctrl_signal_o) 
+                        if (pipeline_ctrl_signal_o) begin
+                            reg_write_en_o =        NO_REG_WRITE;
                             reg_file_addr_o =       one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
+                        end
                         else begin
                             reg_write_en_o =        REG_WRITE;
                             reg_file_addr_o =       SP_REG_NUM;
@@ -307,19 +324,23 @@ module cpu_controller(
                         end
                     end
                     // TODO: implement branching on POP registers if PC is one of the popped registers
+                    // TODO: check mem read signal for all loads, including pop and LDM
+                    // TODO: check if mem read is needed for LDM/POP. I dont think it is, since both instructions have a reg write after
+                    // they load, which is the same as a delay slot. But should check anyways
                     POP_MUL_REG: begin
                         reg_list_from_instruction = {instruction_i[8],7'b0,instruction_i[7:0]};
                         pipeline_ctrl_signal_o =    (bit_count(reg_list_from_instruction & hold_counter) != 5'b0);
                         accumulator_imm_o =         4*accumulator;
                         reg_dest_addr_source_o =    ADDR_FROM_CTRL_UNIT;
                         alu_input_2_select_o =      FROM_ACCUMULATOR;
+                        reg_write_en_o =            REG_WRITE;
                         if (pipeline_ctrl_signal_o) begin
-                            reg_write_en_o =        REG_WRITE;
-                            reg_file_addr_o =       one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
+                            reg_file_data_source_o = FROM_MEMORY;
+                            reg_file_addr_o =        one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
                         end
                         else begin
-                            reg_file_addr_o =       SP_REG_NUM; 
-                            reg_write_en_o =        reg_list_from_instruction[8];
+                            reg_file_data_source_o = FROM_ALU;
+                            reg_file_addr_o =        SP_REG_NUM; 
                         end
                     end
                     default: ;
@@ -332,16 +353,17 @@ module cpu_controller(
                 alu_input_2_select_o =      FROM_ACCUMULATOR;
                 mem_write_en_o =            pipeline_ctrl_signal_o;
                 reg_write_en_o =            ~pipeline_ctrl_signal_o;
-                if (pipeline_ctrl_signal_o)  begin
+                if (pipeline_ctrl_signal_o) begin 
+                    reg_file_addr_o =       one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
                     reg_file_addr_2_source_o =  ADDR_FROM_CTRL_UNIT;
-                    reg_file_addr_o =           one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
                 end
                 else begin
-                    reg_file_addr_o =           4'(instruction_i[10:8]);
-                    reg_dest_addr_source_o =    ADDR_FROM_CTRL_UNIT;
+                    reg_file_addr_o =       4'(instruction_i[10:8]);
+                    reg_dest_addr_source_o = ADDR_FROM_CTRL_UNIT;
                 end
             end
             LOAD_MULT_REG: begin
+                reg_file_data_source_o =    FROM_MEMORY;
                 reverse_order_hold_counter = REV_LOAD_COUNTER;
                 reg_list_from_instruction = 16'(instruction_i[7:0]);
                 new_sp_offset =             4*(bit_count(16'(instruction_i[7:0])) - 1'b1);
@@ -357,6 +379,7 @@ module cpu_controller(
                     reg_file_addr_o =       4'(instruction_i[10:8]);
                     reg_write_en_o =        (base_reg_in_list_status_sig == BASE_REG_NOT_IN_LIST);
                     accumulator_imm_o =     4*bit_count(16'(instruction_i[7:0]));
+                    reg_file_data_source_o = FROM_ALU;
                 end
             end
             COND_BRANCH: ;

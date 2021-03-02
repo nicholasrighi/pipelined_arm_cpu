@@ -22,15 +22,18 @@ module decode_block(
                         output alu_input_source       alu_input_2_select_o,
                         output stall_pipeline_sig     pipeline_ctrl_sig_o,
                         output alu_control_signal     alu_control_signal_o,
+                        output reg_2_reg_3_select_sig reg_2_reg_3_select_sig_o,
                         output logic                  is_valid_o,
                         output logic [6:0]            opA_opB_o,
                         output logic [ADDR_WIDTH-1:0] reg_1_source_addr_o,
                         output logic [ADDR_WIDTH-1:0] reg_2_source_addr_o,
+                        output logic [ADDR_WIDTH-1:0] reg_3_source_addr_o,
                         output logic [ADDR_WIDTH-1:0] reg_dest_addr_o,
                         output logic [WORD-1:0]       accumulator_imm_o,
                         output logic [WORD-1:0]       immediate_o,
                         output logic [WORD-1:0]       reg_1_data_o,
                         output logic [WORD-1:0]       reg_2_data_o,
+                        output logic [WORD-1:0]       reg_3_data_o,
                         output logic [WORD-1:0]       program_counter_o
                      );
 
@@ -49,6 +52,7 @@ module decode_block(
             stall_pipeline_sig      stall_pipeline_controller_internal;
             reg_addr_data_source    reg_file_addr_2_source_internal;
             reg_addr_data_source    reg_dest_addr_source_internal;
+            reg_2_reg_3_select_sig  select_reg_2_reg_3_sig_internal;
             logic [ADDR_WIDTH-1:0]  reg_file_addr_o;
             logic [WORD-1:0]        accumulator_imm_internal;
 
@@ -57,6 +61,7 @@ module decode_block(
             //////////////////////////////////////
             logic [ADDR_WIDTH-1:0]  reg_addr_1_from_addr_decoder; 
             logic [ADDR_WIDTH-1:0]  reg_addr_2_from_addr_decoder;
+            logic [ADDR_WIDTH-1:0]  reg_addr_3_from_addr_decoder;
             logic [ADDR_WIDTH-1:0]  reg_dest_addr_from_addr_decoder;
 
             //////////////////////////////////////
@@ -83,7 +88,7 @@ module decode_block(
             always_comb begin
 
                // if the current values being evaluated aren't valid, then the controller and hazard detectors 
-               // is valid signals aren't relevant. We always need to AND the is_valid_i signal with any control logic that 
+               // stall_pipeline signals aren't relevant. We always need to AND the is_valid_i signal with any control logic that 
                // is used 
                final_is_valid_internal = is_valid_i & is_valid_from_controller_internal & stall_pipeline_hazard_internal;
 
@@ -127,7 +132,8 @@ module decode_block(
                                         .accumulator_imm_o(accumulator_imm_internal),
                                         .reg_file_addr_o(reg_file_addr_o),
                                         .reg_file_addr_2_source_o(reg_file_addr_2_source_internal),
-                                        .reg_dest_addr_source_o(reg_dest_addr_source_internal)
+                                        .reg_dest_addr_source_o(reg_dest_addr_source_internal),
+                                        .reg_2_reg_3_select_sig_o(select_reg_2_reg_3_sig_internal)
                                        );
 
             reg_addr_decoder addr_decoder(
@@ -135,6 +141,7 @@ module decode_block(
 
                                        .reg_addr_1_o(reg_addr_1_from_addr_decoder),
                                        .reg_addr_2_o(reg_addr_2_from_addr_decoder),
+                                       .reg_addr_3_o(reg_addr_3_from_addr_decoder),
                                        .reg_dest_addr_o(reg_dest_addr_from_addr_decoder)
                                         );   
 
@@ -150,12 +157,14 @@ module decode_block(
                                        .write_en_i(reg_file_write_en_i),
                                        .read_addr_1_i(reg_addr_1_from_addr_decoder),
                                        .read_addr_2_i(final_reg_2_addr_internal),
+                                       .read_addr_3_i(reg_addr_3_from_addr_decoder),
                                        .write_addr_i(reg_dest_addr_i),
                                        .reg_data_i(reg_data_i),
                                        .program_counter_i(program_counter_i),
 
                                        .reg_data_1_o(reg_1_data_o),
                                        .reg_data_2_o(reg_2_data_o),
+                                       .reg_data_3_o(reg_3_data_o),
                                        .program_counter_o(program_counter_o)
             );
 
@@ -176,7 +185,9 @@ module decode_block(
                                         .immediate_i(immediate_internal),
                                         .reg_1_source_addr_i(reg_addr_1_from_addr_decoder),
                                         .reg_2_source_addr_i(final_reg_2_addr_internal),
+                                        .reg_3_source_addr_i(reg_addr_3_from_addr_decoder),
                                         .reg_dest_addr_i(final_reg_dest_addr_internal),
+                                        .reg_2_reg_3_select_sig_i(select_reg_2_reg_3_sig_internal),
 
                                         .mem_write_en_o(mem_write_en_o),
                                         .mem_read_en_o(mem_read_en_o),
@@ -192,7 +203,8 @@ module decode_block(
                                         .immediate_o(immediate_o),
                                         .reg_1_source_addr_o(reg_1_source_addr_o),
                                         .reg_2_source_addr_o(reg_2_source_addr_o),
-                                        .reg_dest_addr_o(reg_dest_addr_o)
-            );
-
+                                        .reg_3_source_addr_o(reg_3_source_addr_o),
+                                        .reg_dest_addr_o(reg_dest_addr_o),
+                                        .reg_2_reg_3_select_sig_o(reg_2_reg_3_select_sig_o)
+                                          );
 endmodule

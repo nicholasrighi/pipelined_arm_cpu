@@ -43,14 +43,14 @@ always_comb begin
         ALU_NOT:                alu_result_o = ~data_in_1_i;
         ALU_BIT_CLEAR:          alu_result_o = data_in_1_i & (~data_in_2_i);
         ALU_S_EXTEND_HW:        alu_result_o = {{16{data_in_1_i[HALF_WORD-1]}},data_in_1_i[HALF_WORD-1:0]};
-        ALU_S_EXTEND_BYTE:      alu_result_o = {{24{data_in_1_i[BYTE]}}, data_in_1_i[BYTE-1:0]};
+        ALU_S_EXTEND_BYTE:      alu_result_o = {{24{data_in_1_i[BYTE-1]}}, data_in_1_i[BYTE-1:0]};
         ALU_UN_S_EXTEND_HW:     alu_result_o = {{16{1'b0}},data_in_1_i[HALF_WORD-1:0]};
         ALU_UN_S_EXTEND_BYTE:   alu_result_o = {{24{1'b0}}, data_in_1_i[BYTE-1:0]};
         ALU_BYTE_REV_W:         alu_result_o = {data_in_1_i[BYTE-1:0], data_in_1_i[2*BYTE-1 -: BYTE], data_in_1_i[3*BYTE-1 -: BYTE], 
                                                 data_in_1_i[4*BYTE-1 -: BYTE]};
         ALU_BYTE_REV_P_HW:      alu_result_o = {data_in_1_i[3*BYTE-1 -: BYTE], data_in_1_i[4*BYTE-1 -: BYTE], 
                                                 data_in_1_i[BYTE-1 -: BYTE], data_in_1_i[2*BYTE-1 -: BYTE]};
-        ALU_BYTE_REV_S_HW:      alu_result_o = {{16{data_in_1_i[BYTE]}}, data_in_1_i[BYTE-1 -: BYTE], data_in_1_i[2*BYTE-1 -: BYTE]}; 
+        ALU_BYTE_REV_S_HW:      alu_result_o = {{16{data_in_1_i[BYTE-1]}}, data_in_1_i[BYTE-1 -: BYTE], data_in_1_i[2*BYTE-1 -: BYTE]}; 
     default: ;
     endcase
 

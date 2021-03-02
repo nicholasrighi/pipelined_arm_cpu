@@ -35,15 +35,18 @@ module arm_cpu(
     alu_input_source        alu_input_2_select_DECODE_TO_EXE;
     update_flag_sig         update_flag_DECODE_TO_EXE;
     alu_control_signal      alu_control_signal_DECODE_TO_EXE;
+    reg_2_reg_3_select_sig  reg_2_reg_3_select_DECODE_TO_EXE;
     logic                   is_valid_DECODE_TO_EXE;
     logic [6:0]             opA_opB_DECODE_TO_EXE;
     logic [ADDR_WIDTH-1:0]  reg_1_source_addr_DECODE_TO_EXE;
     logic [ADDR_WIDTH-1:0]  reg_2_source_addr_DECODE_TO_EXE;
+    logic [ADDR_WIDTH-1:0]  reg_3_source_addr_DECODE_TO_EXE;
     logic [ADDR_WIDTH-1:0]  reg_dest_addr_DECODE_TO_EXE;
     logic [WORD-1:0]        accumulator_imm_DECODE_TO_EXE;
     logic [WORD-1:0]        immediate_DECODE_TO_EXE;
     logic [WORD-1:0]        reg_1_data_DECODE_TO_EXE;
     logic [WORD-1:0]        reg_2_data_DECODE_TO_EXE;
+    logic [WORD-1:0]        reg_3_data_DECODE_TO_EXE;
     // verilator lint_off UNUSED
     logic [WORD-1:0]        program_counter_DECODE_TO_EXE;  //TODO: check if this signal is needed?
     // verilator lint_on UNUSED
@@ -126,15 +129,18 @@ module arm_cpu(
                         .alu_control_signal_o(alu_control_signal_DECODE_TO_EXE),
                         .update_flag_o(update_flag_DECODE_TO_EXE),
                         .pipeline_ctrl_sig_o(pipeline_stall_FROM_DECODE),
+                        .reg_2_reg_3_select_sig_o(reg_2_reg_3_select_DECODE_TO_EXE),
                         .is_valid_o(is_valid_DECODE_TO_EXE),
                         .opA_opB_o(opA_opB_DECODE_TO_EXE),
                         .accumulator_imm_o(accumulator_imm_DECODE_TO_EXE),
                         .reg_1_source_addr_o(reg_1_source_addr_DECODE_TO_EXE),
                         .reg_2_source_addr_o(reg_2_source_addr_DECODE_TO_EXE),
+                        .reg_3_source_addr_o(reg_3_source_addr_DECODE_TO_EXE),
                         .reg_dest_addr_o(reg_dest_addr_DECODE_TO_EXE),
                         .immediate_o(immediate_DECODE_TO_EXE),
                         .reg_1_data_o(reg_1_data_DECODE_TO_EXE),
                         .reg_2_data_o(reg_2_data_DECODE_TO_EXE),
+                        .reg_3_data_o(reg_3_data_DECODE_TO_EXE),
                         .program_counter_o(program_counter_DECODE_TO_EXE)
                         );
 
@@ -150,10 +156,12 @@ module arm_cpu(
                          .alu_control_signal_i(alu_control_signal_DECODE_TO_EXE),
                          .reg_write_en_MEM_i(reg_file_write_en_EXE_TO_MEM), //the write enable signal that comes from MEM stage is the same one that leaves
                          .reg_write_en_WB_i(reg_file_write_en_MEM_TO_WB),   //the EXE stage
+                         .reg_2_reg_3_select_sig_i(reg_2_reg_3_select_DECODE_TO_EXE),
                          .is_valid_i(is_valid_DECODE_TO_EXE),
                          .opA_opB_i(opA_opB_DECODE_TO_EXE),
                          .reg_1_source_addr_i(reg_1_source_addr_DECODE_TO_EXE),
                          .reg_2_source_addr_i(reg_2_source_addr_DECODE_TO_EXE),
+                         .reg_3_source_addr_i(reg_3_source_addr_DECODE_TO_EXE),
                          .reg_dest_addr_i(reg_dest_addr_DECODE_TO_EXE),
                          .reg_dest_MEM_i(reg_dest_addr_EXE_TO_MEM),   //this is the same as the reg_dest_addr that leaves the EXE stage
                          .reg_dest_WB_i(reg_dest_addr_WB_TO_DECODE),
@@ -161,6 +169,7 @@ module arm_cpu(
                          .immediate_i(immediate_DECODE_TO_EXE),
                          .reg_1_data_i(reg_1_data_DECODE_TO_EXE),
                          .reg_2_data_i(reg_2_data_DECODE_TO_EXE),
+                         .reg_3_data_i(reg_3_data_DECODE_TO_EXE),
                          .reg_data_MEM_i(alu_result_EXE_TO_MEM),             //TODO. check that this is the correct signal. It might need to be second reg data?
                          .reg_data_WB_i(reg_data_WB_TO_DECODE),
                          

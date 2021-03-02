@@ -101,6 +101,7 @@
 	typedef enum logic {NO_MEM_READ = 0, MEM_READ} 						mem_read_signal;
 	typedef enum logic {NO_STALL_PIPELINE = 0, STALL_PIPELINE}			stall_pipeline_sig;
 	typedef enum logic {NO_UPDATE_FLAG = 0, UPDATE_FLAG} 				update_flag_sig;
+	typedef enum logic {SELECT_REG_2 = 0, SELECT_REG_3}					reg_2_reg_3_select_sig;
 	typedef enum logic [1:0] {FORWARD_FROM_DECODE, 
 							FORWARD_FROM_MEM, FORWARD_FROM_WB}			forwarding_data_source;
 

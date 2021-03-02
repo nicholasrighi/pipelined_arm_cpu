@@ -155,11 +155,11 @@ module data_mem(
             // Load/Store multiple registers //
             STORE_MULTIPLE:
             begin
-                max_size = 2'd1;
+                max_size = 2'd3;
             end
             LOAD_MULTIPLE:
             begin
-                max_size = 2'd1;
+                max_size = 2'd3;
             end
             // Push/Pop
             PUSH:
@@ -217,7 +217,7 @@ module data_mem(
         .CLK(clk),
         .WEN(mem_write_en_1),
         //.CEN(),
-        .A(stored_mem_addr),
+        .A(mem_addr),
         .D(data_write_internal_1),
         .Q(data_read_internal_1)
     );
@@ -225,7 +225,7 @@ module data_mem(
         .CLK(clk),
         .WEN(mem_write_en_2),
         //.CEN(),
-        .A(stored_mem_addr),
+        .A(mem_addr),
         .D(data_write_internal_2),
         .Q(data_read_internal_2)
     );
@@ -233,7 +233,7 @@ module data_mem(
         .CLK(clk),
         .WEN(mem_write_en_3),
         //.CEN(),
-        .A(stored_mem_addr),
+        .A(mem_addr),
         .D(data_write_internal_3),
         .Q(data_read_internal_3)
     );
@@ -241,7 +241,7 @@ module data_mem(
         .CLK(clk),
         .WEN(mem_write_en_4),
         //.CEN(),
-        .A(stored_mem_addr),
+        .A(mem_addr),
         .D(data_write_internal_4),
         .Q(data_read_internal_4)
     );
@@ -249,7 +249,6 @@ module data_mem(
     always_ff @(posedge clk) begin
         stored_max_size     <= max_size;
         stored_sign_extend  <= sign_extend;
-        stored_mem_addr     <= mem_addr;
     end
 
 endmodule
