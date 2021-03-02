@@ -12,10 +12,12 @@ module execution_block(
                         input alu_control_signal     alu_control_signal_i,
                         input reg_file_write_sig     reg_write_en_MEM_i,
                         input reg_file_write_sig     reg_write_en_WB_i,
+                        input reg_2_reg_3_select_sig reg_2_reg_3_select_sig_i,
                         input logic                  is_valid_i,
                         input logic [6:0]            opA_opB_i,
                         input logic [ADDR_WIDTH-1:0] reg_1_source_addr_i,
                         input logic [ADDR_WIDTH-1:0] reg_2_source_addr_i,
+                        input logic [ADDR_WIDTH-1:0] reg_3_source_addr_i,
                         input logic [ADDR_WIDTH-1:0] reg_dest_addr_i,
                         input logic [ADDR_WIDTH-1:0] reg_dest_MEM_i,
                         input logic [ADDR_WIDTH-1:0] reg_dest_WB_i,
@@ -23,6 +25,7 @@ module execution_block(
                         input logic [WORD-1:0]       immediate_i,
                         input logic [WORD-1:0]       reg_1_data_i,
                         input logic [WORD-1:0]       reg_2_data_i,
+                        input logic [WORD-1:0]       reg_3_data_i,
                         input logic [WORD-1:0]       reg_data_MEM_i,
                         input logic [WORD-1:0]       reg_data_WB_i,
 
@@ -33,7 +36,8 @@ module execution_block(
                         output logic [6:0]           opA_opB_o,
                         output logic [ADDR_WIDTH-1:0] reg_dest_addr_o,
                         output logic [WORD-1:0]      alu_result_o,
-                        output logic [WORD-1:0]      reg_2_data_o
+                        output logic [WORD-1:0]      reg_2_data_o       //TODO: change this name to store_reg_data from reg_2_data, since reg3 or reg2 data 
+                                                                        // can be stored
                         );
 
         logic [WORD-1:0] alu_result_internal;
@@ -43,16 +47,19 @@ module execution_block(
                             .clk_i(clk_i),
                             .update_flag_i(update_flag_i),
                             .alu_ctrl_sig_i(alu_control_signal_i),
+                            .reg_2_reg_3_select_sig_i(reg_2_reg_3_select_sig_i),
                             .alu_input_1_select_i(alu_input_1_select_i),
                             .alu_input_2_select_i(alu_input_2_select_i),
                             .reg_write_en_MEM_i(reg_write_en_MEM_i),
                             .reg_write_en_WB_i(reg_write_en_WB_i),
                             .reg_addr_1_DECODE_i(reg_1_source_addr_i),
                             .reg_addr_2_DECODE_i(reg_2_source_addr_i),
+                            .reg_addr_3_DECODE_i(reg_3_source_addr_i),
                             .reg_dest_MEM_i(reg_dest_MEM_i),
                             .reg_dest_WB_i(reg_dest_WB_i),
                             .reg_data_1_DECODE_i(reg_1_data_i),
                             .reg_data_2_DECODE_i(reg_2_data_i),
+                            .reg_data_3_DECODE_i(reg_3_data_i),
                             .reg_data_MEM_i(reg_data_MEM_i),
                             .reg_data_WB_i(reg_data_WB_i),
                             .accumulator_i(accumulator_imm_i),

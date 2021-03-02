@@ -5,12 +5,14 @@ module reg_addr_decoder(
 
                         output logic [ADDR_WIDTH-1:0] reg_addr_1_o,
                         output logic [ADDR_WIDTH-1:0] reg_addr_2_o,
+                        output logic [ADDR_WIDTH-1:0] reg_addr_3_o,
                         output logic [ADDR_WIDTH-1:0] reg_dest_addr_o
                         );
 
     always_comb begin
         reg_addr_1_o =      'x;
         reg_addr_2_o =      'x;
+        reg_addr_3_o =      'x;
         reg_dest_addr_o =   'x;
         casez (instruction_i.op)
             SHIFT_IMM: begin
@@ -52,9 +54,9 @@ module reg_addr_decoder(
             SPECIAL: begin
                 casez(instruction_i[9:6])
                     ADD_REG_SPECIAL: begin
-                        reg_addr_1_o =  4'(instruction_i[2:0]);
-                        reg_addr_2_o =  4'(instruction_i[6:3]);  
-                        reg_dest_addr_o = {instruction_i[7],instruction_i[2:0]};
+                        reg_addr_1_o =      {instruction_i[7], instruction_i[2:0]};
+                        reg_addr_2_o =      4'(instruction_i[6:3]);  
+                        reg_dest_addr_o =   {instruction_i[7],instruction_i[2:0]};
                     end
                     MOVE_REG_SPECIAL: begin
                         reg_addr_1_o    = instruction_i[6:3];
@@ -107,6 +109,10 @@ module reg_addr_decoder(
             LOAD_STORE_REG: begin
                 reg_addr_1_o =      4'(instruction_i[5:3]);
                 reg_addr_2_o =      4'(instruction_i[8:6]);
+                // for loads/stores using reg reg address calculation, we can set both the 3rd register output and 
+                // the destination output to the same value, and then rely on the control signals to determine
+                // which of these values are actually used
+                reg_addr_3_o =      4'(instruction_i[2:0]);
                 reg_dest_addr_o =   4'(instruction_i[2:0]);
             end
             LOAD_STORE_IMM,
