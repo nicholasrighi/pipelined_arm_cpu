@@ -155,8 +155,11 @@ module cpu_controller(
 
        casez(instruction_i.op)
             SHIFT_IMM: begin
+                // almost all of these instructions update the flags and write to registers,
+                // so putting these here makes code easier to understand
                 update_flag_o = UPDATE_FLAG;
                 reg_write_en_o = REG_WRITE;
+
                 casez(shift_code_internal)
                     LEFT_SHIFT_L_IM: begin
                                 alu_control_signal_o = ALU_LEFT_SHIFT_L;

@@ -13,11 +13,7 @@ module alu(
     // what condition flags to update 
     logic [WORD:0] extended_sum;
 
-    // TODO: Implement correct overflow and carry logic. Forget which is which at the moment, but 
-    // not being done correctly right now. Should be able to index into extended_sum and use those
-    // values
-
-always_comb begin
+    always_comb begin
 
     alu_result_o = 'x;
     extended_sum = 'x;
@@ -54,11 +50,18 @@ always_comb begin
     default: ;
     endcase
 
-    // NEED TO CHECK ALL OF THESE
     status_reg_o.negative_flag = alu_result_o[WORD-1];
     status_reg_o.zero_flag =     (alu_result_o == 32'b0);
+    
+    // the overflow flag is simply the carry out of the extended sum
     status_reg_o.carry_flag =    extended_sum[WORD];      
-    status_reg_o.overflow_flag = 1'b1;                  //THIS IS WRONG
+    
+    // overflow can only occur if the sign bits of input data are the same (the left XNOR checks for this)
+    // if the sign bits are the same, then overflow occured if the result has a different sign than
+    // the result. We can check for the sign of input/result being the same by XOR'ing the result sign
+    // with the input sign. If the signs of the result/input are different and the inputs have the same sign
+    // then overflow occured
+    status_reg_o.overflow_flag = ~(data_in_1_i[WORD-1] ^ data_in_2_i[WORD-1]) & (extended_sum[WORD-1] ^ data_in_1_i[WORD-1]);
 
 end
 

@@ -58,8 +58,6 @@ module data_mem(
     logic [23:16] data_read_internal_3;
     logic [31:24] data_read_internal_4;
 
-    logic [31:0] stored_mem_addr;
-
 	//assign size = max_size;
 
     assign data_write_internal_1 = mem_data_in[7:0];

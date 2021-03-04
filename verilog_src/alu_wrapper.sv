@@ -10,19 +10,18 @@ module alu_wrapper(
                             input logic [WORD-1:0]      reg_data_2_i,
                             input logic [WORD-1:0]      accumulator_i,
                             input logic [WORD-1:0]      immediate_i,
+                            input logic [WORD-1:0]      program_counter_i,
 
                             output logic [WORD-1:0]     alu_result_o,
                             output status_register      status_reg_o
                         );
 
-        status_register status_reg;
         status_register next_status_reg;
 
         logic [WORD-1:0] alu_data_in_1_internal;
         logic [WORD-1:0] alu_data_in_2_internal;
 
         always_comb begin
-                status_reg_o = status_reg;
                 alu_data_in_1_internal = 'x;
                 alu_data_in_2_internal = 'x;
                 case (alu_input_1_select_i)
@@ -30,6 +29,7 @@ module alu_wrapper(
                         FROM_IMM:               alu_data_in_1_internal = immediate_i;
                         FROM_ZERO:              alu_data_in_1_internal = 32'b0;
                         FROM_ACCUMULATOR:       alu_data_in_1_internal = accumulator_i;
+                        FROM_PC:                alu_data_in_1_internal = program_counter_i;
                         default: ;
                 endcase
 
@@ -38,6 +38,7 @@ module alu_wrapper(
                         FROM_IMM:               alu_data_in_2_internal = immediate_i;
                         FROM_ZERO:              alu_data_in_2_internal = 32'b0;
                         FROM_ACCUMULATOR:       alu_data_in_2_internal = accumulator_i;
+                        FROM_PC:                alu_data_in_2_internal = program_counter_i;
                         default: ;
                 endcase
         end
@@ -53,7 +54,7 @@ module alu_wrapper(
 
         always_ff @(posedge clk_i) begin 
                 if (update_flag_i)
-                        status_reg <= next_status_reg;
+                        status_reg_o <= next_status_reg;
         end
 
 endmodule

@@ -16,10 +16,6 @@ module clocked_reg_file(
                             output logic [WORD-1:0] program_counter_o
                         );
 
-    // TODO: Check if you can write to the program counter. Since PC is NOT stored in the reg file,
-    // need to bypass the reg file and only read out the stored pc value if that's the case. Also need
-    // to add logic for "writing" to the PC  (this might not all be necessary, not sure)
-
     // signals used to forward data from write back stage to execution stage if 
     // reading from the register that was written to
     logic stored_write_en;
@@ -31,6 +27,8 @@ module clocked_reg_file(
     logic [WORD-1:0] stored_read_2_data;
     logic [WORD-1:0] stored_read_3_data;
     logic [WORD-1:0] stored_write_data;
+
+    // TODO: check how to manage reading the program counter, especially in the case of forwarding
 
     // determine if we need to output forwarded data or old data
     always_comb begin

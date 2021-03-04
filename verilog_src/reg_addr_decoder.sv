@@ -132,6 +132,7 @@ module reg_addr_decoder(
             end
             STORE_MULT_REG,
             LOAD_MULT_REG: reg_addr_1_o =   4'(instruction_i[10:8]);
+            UNCOND_BRANCH: ;
             default: ;
         endcase
     end

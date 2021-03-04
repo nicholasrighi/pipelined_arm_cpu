@@ -89,17 +89,38 @@
 	parameter STORE_REG_IMM_OFFSET = 3'b0??;
 	parameter LOAD_REG_IMM_OFFSET =  3'b1??;
 
-	typedef enum logic [1:0] {FROM_REG, FROM_IMM,  
-					FROM_ACCUMULATOR, FROM_ZERO} 						alu_input_source;
+	// conditional flags
+	parameter EQ = 4'b0000;
+	parameter NE = 4'b0001;
+	parameter CS = 4'b0010;
+	parameter CC = 4'b0011;
+	parameter MI = 4'b0100;
+	parameter PL = 4'b0101;
+	parameter VS = 4'b0110;
+	parameter VC = 4'b0111;
+	parameter HI = 4'b1000;
+	parameter LS = 4'b1001;
+	parameter GE = 4'b1010;
+	parameter LT = 4'b1011;
+	parameter GT = 4'b1100;
+	parameter LE = 4'b1101;
+	parameter AL = 4'b1110;
+
+	typedef enum logic [2:0] {FROM_REG, FROM_IMM,  
+					FROM_ACCUMULATOR, FROM_ZERO, FROM_PC}				alu_input_source;
 					
 	typedef enum logic {FROM_ALU,FROM_MEMORY}							reg_file_data_source;
 	typedef enum logic {NO_REG_WRITE = 0, REG_WRITE}					reg_file_write_sig;
 	typedef enum logic {ADDR_FROM_INSTRUCTION, ADDR_FROM_CTRL_UNIT}		reg_addr_data_source;
 
+	typedef enum logic {NO_STALL_PIPELINE = 0, STALL_PIPELINE}			stall_pipeline_sig;
+
+	typedef enum logic {NO_TAKE_BRANCH = 0, TAKE_BRANCH}				take_branch_ctrl_sig;
+	typedef enum logic {NO_FLUSH_PIPELINE = 0, FLUSH_PIPELINE = 1}		flush_pipeline_sig;
+
 	typedef enum logic {NO_IS_VALID = 0, IS_VALID = 1}					is_valid_sig;
 	typedef enum logic {NO_MEM_WRITE = 0, MEM_WRITE}					mem_write_signal;
 	typedef enum logic {NO_MEM_READ = 0, MEM_READ} 						mem_read_signal;
-	typedef enum logic {NO_STALL_PIPELINE = 0, STALL_PIPELINE}			stall_pipeline_sig;
 	typedef enum logic {NO_UPDATE_FLAG = 0, UPDATE_FLAG} 				update_flag_sig;
 	typedef enum logic {SELECT_REG_2 = 0, SELECT_REG_3}					reg_2_reg_3_select_sig;
 	typedef enum logic [1:0] {FORWARD_FROM_DECODE, 
@@ -117,5 +138,6 @@
 		logic carry_flag;
 		logic overflow_flag;
 	} status_register;
+
 //verilator lint_on UNUSED
 `endif

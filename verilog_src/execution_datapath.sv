@@ -2,6 +2,7 @@
 
 module execution_datapath(
                             input logic                     clk_i,
+                            input logic                     is_valid_i,
                             input logic                     update_flag_i,
                             input reg_2_reg_3_select_sig    reg_2_reg_3_select_sig_i,
                             input alu_control_signal        alu_ctrl_sig_i,
@@ -9,6 +10,7 @@ module execution_datapath(
                             input alu_input_source          alu_input_2_select_i,
                             input reg_file_write_sig        reg_write_en_MEM_i,
                             input reg_file_write_sig        reg_write_en_WB_i,
+                            input logic [7:0]               op_cond_i,
                             input logic [ADDR_WIDTH-1:0]    reg_addr_1_DECODE_i,
                             input logic [ADDR_WIDTH-1:0]    reg_addr_2_DECODE_i,
                             input logic [ADDR_WIDTH-1:0]    reg_addr_3_DECODE_i,
@@ -21,9 +23,13 @@ module execution_datapath(
                             input logic [WORD-1:0]          reg_data_WB_i,
                             input logic [WORD-1:0]          accumulator_i,
                             input logic [WORD-1:0]          immediate_i,
+                            input logic [WORD-1:0]          program_counter_i,
 
+                            output take_branch_ctrl_sig     take_branch_o,
+                            output flush_pipeline_sig       flush_pipeline_o,
                             output logic [WORD-1:0]         alu_result_o,
-                            output logic [WORD-1:0]         reg_2_data_o
+                            output logic [WORD-1:0]         reg_2_data_o,
+                            output logic [WORD-1:0]         program_counter_o
                         );
 
         //////////////////////////////////////
@@ -33,15 +39,16 @@ module execution_datapath(
         forwarding_data_source  reg_2_ctrl_sig_internal;
         forwarding_data_source  reg_3_ctrl_sig_internal;
 
+        //////////////////////////////////////
+        //  BRANCH CONTROLLER SIGNALS       //
+        //////////////////////////////////////
+        status_register status_reg_internal;
+
         // these are the values that will be given to the alu as register inputs
         // if forwarding is required, these signals will have the forwarded values
         logic [WORD-1:0] final_alu_reg_input_1_data_internal;
         logic [WORD-1:0] final_alu_reg_input_2_data_internal;
         logic [WORD-1:0] final_alu_reg_input_3_data_internal;
-
-        // verilator lint_off UNUSED
-        status_register status_reg_internal;    //TODO. Need to use status register for cond. branching
-        // verilator lint_on UNUSED
 
         always_comb begin
             final_alu_reg_input_1_data_internal = 'x;
@@ -91,7 +98,7 @@ module execution_datapath(
 
         alu_wrapper wrapped_alu (
                                     .clk_i(clk_i),
-                                    .update_flag_i(update_flag_i),
+                                    .update_flag_i(update_flag_i & is_valid_i),
                                     .alu_ctrl_sig_i(alu_ctrl_sig_i),
                                     .alu_input_1_select_i(alu_input_1_select_i),
                                     .alu_input_2_select_i(alu_input_2_select_i),
@@ -99,9 +106,22 @@ module execution_datapath(
                                     .reg_data_2_i(final_alu_reg_input_2_data_internal),
                                     .accumulator_i(accumulator_i),
                                     .immediate_i(immediate_i),
+                                    .program_counter_i(program_counter_i),
 
                                     .alu_result_o(alu_result_o),
                                     .status_reg_o(status_reg_internal)
         );
 
+        branch_controller b_controller(
+                                    .is_valid_i(is_valid_i),
+                                    .status_reg_i(status_reg_internal),
+                                    .op_cond_i(op_cond_i),
+                                    .program_counter_i(program_counter_i),
+                                    .immediate_i(immediate_i),
+                                    .reg_data_i(reg_data_2_DECODE_i),
+
+                                    .take_branch_o(take_branch_o),
+                                    .flush_pipeline_o(flush_pipeline_o),
+                                    .program_counter_o(program_counter_o)
+                                    );
 endmodule

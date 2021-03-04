@@ -63,6 +63,9 @@ module imm_gen(
                     default:    immediate_value_o = 'x;
                 endcase
             end
+            // TODO: check if we need to sign extend all other values
+            COND_BRANCH:        immediate_value_o = 32'(signed'( {instruction_i[7:0],1'b0} ));
+            UNCOND_BRANCH:      immediate_value_o = 32'(signed'( {instruction_i[10:0],1'b0} ));
             // TODO: Fix this SPECIAL case, it's wrong, should be some branch instruction
             SPECIAL: immediate_value_o = {S, ~(J_1 ^ S), ~(J_2 ^ S), current_immediate, stored_immediate, 8'b0};
             default: immediate_value_o = 32'bx;

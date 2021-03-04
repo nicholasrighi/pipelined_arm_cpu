@@ -10,6 +10,7 @@ module decode_block(
                         input mem_read_signal         mem_read_EXE_i,
                         input logic [ADDR_WIDTH-1:0]  reg_dest_addr_i,
                         input instruction             instruction_i,
+                        input flush_pipeline_sig      flush_pipeline_i,
                         input logic [WORD-1:0]        reg_data_i,
                         input logic [WORD-1:0]        program_counter_i,
 
@@ -24,7 +25,7 @@ module decode_block(
                         output alu_control_signal     alu_control_signal_o,
                         output reg_2_reg_3_select_sig reg_2_reg_3_select_sig_o,
                         output logic                  is_valid_o,
-                        output logic [6:0]            opA_opB_o,
+                        output logic [7:0]            op_cond_o,
                         output logic [ADDR_WIDTH-1:0] reg_1_source_addr_o,
                         output logic [ADDR_WIDTH-1:0] reg_2_source_addr_o,
                         output logic [ADDR_WIDTH-1:0] reg_3_source_addr_o,
@@ -83,13 +84,16 @@ module decode_block(
             //////////////////////////////////////
             //    INTERNAL ONLY LOGIC SIGNALS   //
             //////////////////////////////////////
+            // verilator lint_off UNUSED
             is_valid_sig   final_is_valid_internal;
+            // verilator lint_on UNUSED
 
             always_comb begin
 
                // if the current values being evaluated aren't valid, then the controller and hazard detectors 
                // stall_pipeline signals aren't relevant. We always need to AND the is_valid_i signal with any control logic that 
                // is used 
+               // TODO: This flag is for detecting invalid instructions. Not sure if we need to do this, but could be useful later
                final_is_valid_internal = is_valid_i & is_valid_from_controller_internal & stall_pipeline_hazard_internal;
 
                pipeline_ctrl_sig_o = (is_valid_o & (stall_pipeline_hazard_internal | stall_pipeline_controller_internal));
@@ -180,7 +184,8 @@ module decode_block(
                                         .alu_control_signal_i(alu_control_signal_internal),
                                         .update_flag_i(update_flag_internal),
                                         .is_valid_i(is_valid_i),
-                                        .opA_opB_i(instruction_i[HALF_WORD-1:9]),
+                                        .flush_pipeline_i(flush_pipeline_i),
+                                        .op_cond_i(instruction_i[HALF_WORD-1:8]),
                                         .accumulator_imm_i(accumulator_imm_internal),
                                         .immediate_i(immediate_internal),
                                         .reg_1_source_addr_i(reg_addr_1_from_addr_decoder),
@@ -188,6 +193,7 @@ module decode_block(
                                         .reg_3_source_addr_i(reg_addr_3_from_addr_decoder),
                                         .reg_dest_addr_i(final_reg_dest_addr_internal),
                                         .reg_2_reg_3_select_sig_i(select_reg_2_reg_3_sig_internal),
+                                        .program_counter_i(program_counter_i),
 
                                         .mem_write_en_o(mem_write_en_o),
                                         .mem_read_en_o(mem_read_en_o),
@@ -198,13 +204,14 @@ module decode_block(
                                         .alu_control_signal_o(alu_control_signal_o),
                                         .update_flag_o(update_flag_o),
                                         .is_valid_o(is_valid_o),
-                                        .opA_opB_o(opA_opB_o),
+                                        .op_cond_o(op_cond_o),
                                         .accumulator_imm_o(accumulator_imm_o),
                                         .immediate_o(immediate_o),
                                         .reg_1_source_addr_o(reg_1_source_addr_o),
                                         .reg_2_source_addr_o(reg_2_source_addr_o),
                                         .reg_3_source_addr_o(reg_3_source_addr_o),
                                         .reg_dest_addr_o(reg_dest_addr_o),
-                                        .reg_2_reg_3_select_sig_o(reg_2_reg_3_select_sig_o)
+                                        .reg_2_reg_3_select_sig_o(reg_2_reg_3_select_sig_o),
+                                        .program_counter_o(program_counter_o)
                                           );
 endmodule

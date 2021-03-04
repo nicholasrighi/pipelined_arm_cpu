@@ -5,23 +5,25 @@ module instruction_mem(
                                 input logic                 reset_i,
                                 input logic                 program_mem_write_en_i,
                                 input logic                 is_valid_i,
+                                input flush_pipeline_sig    flush_pipeline_i,
                                 input stall_pipeline_sig    stall_pipeline_i,
                                 input logic [HALF_WORD-1:0] instruction_i,
                                 input logic [WORD-1:0]      instruction_addr_i,
 
                                 output logic                 is_valid_o,
-                                output logic [HALF_WORD-1:0] instruction_o
+                                output logic [HALF_WORD-1:0] instruction_o,
+                                output logic [WORD-1:0]      program_counter_o
                                 );
 
     // store pc so we can stall the pipeline when needed
-    logic [WORD-1:0] stored_pc;
     logic [WORD-1:0] next_instruction_addr;
 
     always_comb begin
+        // determines what the next value of the pc should be 
         if (program_mem_write_en_i)
             next_instruction_addr = instruction_addr_i;
         else if (stall_pipeline_i)
-            next_instruction_addr = stored_pc;
+            next_instruction_addr = program_counter_o;
         else
             next_instruction_addr = instruction_addr_i;
     end
@@ -37,12 +39,16 @@ module instruction_mem(
 
     always_ff @(posedge clk_i) begin
         if (reset_i)
-            is_valid_o <= 1'b0;
-        else 
-            is_valid_o <= is_valid_i;
+            is_valid_o  <= 1'b0;
+        else if (flush_pipeline_i == FLUSH_PIPELINE)
+            is_valid_o  <= 1'b0;
+        else
+            is_valid_o  <= is_valid_i;
 
-        if (stall_pipeline_i == NO_STALL_PIPELINE)
-            stored_pc <= instruction_addr_i;
+        if (reset_i)
+            program_counter_o  <= 'x;
+        else
+            program_counter_o  <= next_instruction_addr;
     end
 
 endmodule
