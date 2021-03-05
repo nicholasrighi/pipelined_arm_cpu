@@ -2,6 +2,7 @@
 
 module alu_wrapper(
                             input logic                 clk_i,
+                            input logic                 reset_i,
                             input logic                 update_flag_i,
                             input alu_control_signal    alu_ctrl_sig_i,
                             input alu_input_source      alu_input_1_select_i,
@@ -30,6 +31,7 @@ module alu_wrapper(
                         FROM_ZERO:              alu_data_in_1_internal = 32'b0;
                         FROM_ACCUMULATOR:       alu_data_in_1_internal = accumulator_i;
                         FROM_PC:                alu_data_in_1_internal = program_counter_i;
+                        FROM_TWO:               alu_data_in_1_internal = 32'd2;
                         default: ;
                 endcase
 
@@ -39,6 +41,7 @@ module alu_wrapper(
                         FROM_ZERO:              alu_data_in_2_internal = 32'b0;
                         FROM_ACCUMULATOR:       alu_data_in_2_internal = accumulator_i;
                         FROM_PC:                alu_data_in_2_internal = program_counter_i;
+                        FROM_TWO:               alu_data_in_2_internal = 32'd2;
                         default: ;
                 endcase
         end
@@ -53,7 +56,9 @@ module alu_wrapper(
         );
 
         always_ff @(posedge clk_i) begin 
-                if (update_flag_i)
+                if (reset_i)
+                        status_reg_o <= 4'b0;
+                else if (update_flag_i)
                         status_reg_o <= next_status_reg;
         end
 

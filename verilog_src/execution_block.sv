@@ -14,7 +14,7 @@ module execution_block(
                         input reg_file_write_sig     reg_write_en_WB_i,
                         input reg_2_reg_3_select_sig reg_2_reg_3_select_sig_i,
                         input logic                  is_valid_i,
-                        input logic [7:0]            op_cond_i,
+                        input instruction            instruction_i,
                         input logic [ADDR_WIDTH-1:0] reg_1_source_addr_i,
                         input logic [ADDR_WIDTH-1:0] reg_2_source_addr_i,
                         input logic [ADDR_WIDTH-1:0] reg_3_source_addr_i,
@@ -49,10 +49,11 @@ module execution_block(
         
         execution_datapath exe_datapath(
                             .clk_i(clk_i),
+                            .reset_i(reset_i),
                             .is_valid_i(is_valid_i),
                             .update_flag_i(update_flag_i),
                             .alu_ctrl_sig_i(alu_control_signal_i),
-                            .op_cond_i(op_cond_i),
+                            .instruction_i(instruction_i),
                             .reg_2_reg_3_select_sig_i(reg_2_reg_3_select_sig_i),
                             .alu_input_1_select_i(alu_input_1_select_i),
                             .alu_input_2_select_i(alu_input_2_select_i),
@@ -86,7 +87,8 @@ module execution_block(
                                 .mem_write_en_i(mem_write_en_i),
                                 .reg_file_write_en_i(reg_file_write_en_i),
                                 .reg_file_data_source_i(reg_file_data_source_i),
-                                .op_cond_i(op_cond_i),
+                                // TODO. rewrite this signal so it's back to opA_opB. Also check that loads/stores still work
+                                .op_cond_i(instruction_i[15:8]),
                                 .reg_dest_addr_i(reg_dest_addr_i),
                                 .alu_result_i(alu_result_internal),
                                 .reg_2_data_i(reg_2_data_internal),          

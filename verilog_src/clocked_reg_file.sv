@@ -1,19 +1,19 @@
 `include "GENERAL_DEFS.svh"
 
 module clocked_reg_file(
-                            input logic clk_i,
-                            input logic write_en_i,
-                            input logic [ADDR_WIDTH-1:0] read_addr_1_i,
-                            input logic [ADDR_WIDTH-1:0] read_addr_2_i,
-                            input logic [ADDR_WIDTH-1:0] read_addr_3_i,
-                            input logic [ADDR_WIDTH-1:0] write_addr_i,
-                            input logic [WORD-1:0] reg_data_i,
-                            input logic [WORD-1:0] program_counter_i,
+                            input logic                     clk_i,
+                            input logic                     write_en_i,
+                            input logic [ADDR_WIDTH-1:0]    read_addr_1_i,
+                            input logic [ADDR_WIDTH-1:0]    read_addr_2_i,
+                            input logic [ADDR_WIDTH-1:0]    read_addr_3_i,
+                            input logic [ADDR_WIDTH-1:0]    write_addr_i,
+                            input logic [WORD-1:0]          reg_data_i,
+                            input logic [WORD-1:0]          program_counter_i,
 
-                            output logic [WORD-1:0] reg_data_1_o,
-                            output logic [WORD-1:0] reg_data_2_o,
-                            output logic [WORD-1:0] reg_data_3_o,
-                            output logic [WORD-1:0] program_counter_o
+                            output logic [WORD-1:0]         reg_data_1_o,
+                            output logic [WORD-1:0]         reg_data_2_o,
+                            output logic [WORD-1:0]         reg_data_3_o,
+                            output logic [WORD-1:0]         program_counter_o
                         );
 
     // signals used to forward data from write back stage to execution stage if 

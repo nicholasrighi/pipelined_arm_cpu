@@ -114,6 +114,10 @@ module cpu_controller(
     localparam BASE_REG_NOT_IN_LIST = 1'b0;
     localparam BASE_REG_IN_LIST = 1'b1;
 
+    // signals to deal with branch and link
+    branch_link_status stored_branch_link;
+    branch_link_status next_branch_link;
+
     logic [4:0] shift_code_internal;
     logic [3:0] data_processing_code_internal;
 
@@ -135,6 +139,7 @@ module cpu_controller(
         reg_list_from_instruction =     'x;
 
         // set defaults for output signals
+        next_branch_link =          NO_STORE_BRANCH;
         is_valid_o =                IS_VALID;
         update_flag_o =             NO_UPDATE_FLAG; 
         mem_write_en_o =            NO_MEM_WRITE;
@@ -230,18 +235,18 @@ module cpu_controller(
                     default: ;
                 endcase
             end
-            // TODO: check MOV (register) when using the SP. Need to branch in that case?
-            // TODO: Implement branching special instructions
-            // TODO: check jumping when adding w/ dest reg = PC
             SPECIAL: begin
                 casez(instruction_i[9:6])
                     ADD_REG_SPECIAL: begin
                         alu_control_signal_o = ALU_ADD;
+                        // If dest reg is the PC then writing has no effect, since we never read the PC value from the register file, we 
+                        // always pass it through the decode stage and read the raw PC value (so the data in R15 is never used)
                         reg_write_en_o       = REG_WRITE;
-                        update_flag_o        = UPDATE_FLAG;
                     end
                     MOVE_REG_SPECIAL: begin
                         alu_control_signal_o = ALU_ADD;
+                        // once again if the dest reg is PC then we can write to the reg file since we never read the value of the PC from the reg file
+                        // we only read the value of the PC from the decode pass through
                         reg_write_en_o       = REG_WRITE;
                         alu_input_2_select_o = FROM_ZERO;
                     end
@@ -249,6 +254,13 @@ module cpu_controller(
                         alu_control_signal_o  = ALU_SUB;
                         update_flag_o         = UPDATE_FLAG;
                     end
+                    BRANCH_LINK_EXCH: begin
+                       alu_control_signal_o =  ALU_ADD; 
+                       alu_input_1_select_o =  FROM_PC;
+                       alu_input_2_select_o =  FROM_IMM;
+                       reg_write_en_o =        REG_WRITE;
+                    end
+                    BRANCH_EXCH: ;
                     default:    ;
                 endcase
             end
@@ -260,10 +272,13 @@ module cpu_controller(
                 alu_input_2_select_o = FROM_IMM;
             end
             LOAD_STORE_REG: begin
+                // TODO: check if this mem_read should be inside the load condition. If we leave it outside it will still work, but 
+                // any stores will have an unnecessary stall since the hazard detector will think it needs to stall. Or maybe not, since
+                // the hazard detector also looks for write_reg when checking. 
                 mem_read_en_o =          MEM_READ;
                 reg_file_data_source_o = FROM_MEMORY;
-                // load instructions have the below condition. If it's not a load it's a store,
-                // so we need to write to mem instead
+                // check if the insruction is a load, and if it is write to reg file. If it's not a load it's a store,
+                // so set mem write
                 if (instruction_i[11] || (instruction_i[10:9] == 2'b11)) 
                     reg_write_en_o =   REG_WRITE;
                 else begin
@@ -387,8 +402,27 @@ module cpu_controller(
             end
             COND_BRANCH: ;
             UNCOND_BRANCH: ;
+            TWO_WORD_INST_1,
+            TWO_WORD_INST_2,
+            TWO_WORD_INST_3: begin
+               if (stored_branch_link == NO_STORE_BRANCH)
+                    next_branch_link = STORE_BRANCH;
+               if (stored_branch_link == STORE_BRANCH) begin
+                    reg_write_en_o =       REG_WRITE;
+                    alu_control_signal_o = ALU_ADD; 
+                    alu_input_1_select_o = FROM_PC;
+                    alu_input_2_select_o = FROM_TWO;
+               end
+            end
             default: is_valid_o = NO_IS_VALID;
        endcase 
+    end
+
+    always_ff @(posedge clk_i) begin
+       if (reset_i)
+            stored_branch_link <= NO_STORE_BRANCH;
+       else
+            stored_branch_link <= next_branch_link;
     end
 
     // logic for updating accumulator

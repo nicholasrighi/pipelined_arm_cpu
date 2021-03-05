@@ -1,7 +1,7 @@
 `include "GENERAL_DEFS.svh"
 
 module reg_addr_decoder(
-                        input instruction instruction_i,
+                        input instruction             instruction_i,
 
                         output logic [ADDR_WIDTH-1:0] reg_addr_1_o,
                         output logic [ADDR_WIDTH-1:0] reg_addr_2_o,
@@ -65,6 +65,12 @@ module reg_addr_decoder(
                     CMP_REG_SPECIAL: begin
                        reg_addr_1_o = {instruction_i[7],instruction_i[2:0]};
                        reg_addr_2_o = instruction_i[6:3];
+                    end
+                    BRANCH_EXCH,
+                    BRANCH_LINK_EXCH: begin
+                        // TODO: Check that the control unit assumes the data is on reg 1, and not reg 2
+                        reg_dest_addr_o = LR_REG_NUM;
+                        reg_addr_1_o =    instruction_i[6:3];
                     end
                     default: ;
                 endcase
@@ -132,8 +138,16 @@ module reg_addr_decoder(
             end
             STORE_MULT_REG,
             LOAD_MULT_REG: reg_addr_1_o =   4'(instruction_i[10:8]);
-            UNCOND_BRANCH: ;
+            TWO_WORD_INST_1,
+            TWO_WORD_INST_2,
+            TWO_WORD_INST_3: begin
+                // there are actually other instructions that use the two word encoding
+                // but we're not implementing them. This means that the only 32 bit instruction
+                // we need to deal with is branch and link
+                reg_dest_addr_o = LR_REG_NUM; 
+            end
             default: ;
         endcase
     end
+
 endmodule

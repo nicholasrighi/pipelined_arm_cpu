@@ -1,13 +1,16 @@
 `include "GENERAL_DEFS.svh"
 
 module branch_controller(
+                            input logic                 clk_i,
+                            input logic                 reset_i,
                             input logic                 is_valid_i,
                             input status_register       status_reg_i,
-                            input logic [7:0]           op_cond_i,
-                            input logic [WORD-1:0]      program_counter_i,
                             // verilator lint_off UNUSED
-                            input logic [WORD-1:0]      reg_data_i,
+                            input instruction           instruction_i,
                             // verilator lint_on UNUSED
+                            input logic [WORD-1:0]      program_counter_i,
+                            input logic [WORD-1:0]      reg_data_1_i,
+                            input logic [WORD-1:0]      reg_data_2_i,
                             input logic [WORD-1:0]      immediate_i,
 
                             output take_branch_ctrl_sig take_branch_o,
@@ -15,30 +18,31 @@ module branch_controller(
                             output [WORD-1:0]           program_counter_o
                         );
 
+    branch_link_status next_branch_link;
+    branch_link_status stored_branch_link;
     logic take_branch_internal;
-    opcode op;
-    logic [3:0] condition;
+    logic [3:0] branch_condition;
 
     // NOTE: ALL REFERENCES TO THE PC MUST USE PROGRAM_COUNTER_INTERNAL, NOT PROGRAM_COUNTER_I
     logic [WORD-1:0] program_counter_internal;
 
     always_comb begin
 
-        op = op_cond_i[7:2];
-        condition = op_cond_i[3:0];
+        branch_condition =  instruction_i[11:8];
+        next_branch_link =  NO_STORE_BRANCH;
 
         // This is to account for the offset that arm requires the PC and the current instruction
         // to have
         program_counter_internal = program_counter_i + 32'd4;
 
-        take_branch_internal = NO_TAKE_BRANCH;
-        flush_pipeline_o = take_branch_internal;
-        program_counter_o = 'x;
+        take_branch_internal =  NO_TAKE_BRANCH;
+        flush_pipeline_o =      take_branch_internal;
+        program_counter_o =     'x;
 
-        casez(op)
+        casez(instruction_i.op)
             COND_BRANCH: begin
                 program_counter_o = program_counter_internal + immediate_i;
-                casez(condition)
+                casez(branch_condition)
                     EQ: take_branch_internal = (status_reg_i.zero_flag == 1'b1);
                     NE: take_branch_internal = (status_reg_i.zero_flag == 1'b0);
                     CS: take_branch_internal = (status_reg_i.carry_flag == 1'b1);
@@ -61,11 +65,56 @@ module branch_controller(
                 take_branch_internal = TAKE_BRANCH;
                 program_counter_o =    program_counter_internal + immediate_i;
             end
-        default;
+            SPECIAL: begin
+               casez(instruction_i[9:6])
+               // TODO. Make sure that controller, addr decoder, and this module all agree on 
+               // which input the data is coming in on (reg_data_1 or reg_data_2)
+                    ADD_REG_SPECIAL: begin
+                       // we only take this branch if the PC is the destination register
+                       if ({instruction_i[7],instruction_i[2:0]} == PC_REG_NUM) begin
+                          take_branch_internal =     TAKE_BRANCH;
+                          program_counter_o = reg_data_1_i + reg_data_2_i; 
+                       end
+                    end
+                    MOVE_REG_SPECIAL: begin
+                       // we only take this branch if the PC is the destination register
+                       if ({instruction_i[7],instruction_i[2:0]} == PC_REG_NUM) begin
+                          take_branch_internal =     TAKE_BRANCH;
+                          program_counter_o =        reg_data_1_i; 
+                       end
+                    end
+                    BRANCH_LINK_EXCH,
+                    BRANCH_EXCH: begin
+                        take_branch_internal =      TAKE_BRANCH; 
+                        program_counter_o =         reg_data_1_i;
+                    end
+                default: ;
+               endcase 
+            end
+            TWO_WORD_INST_1,
+            TWO_WORD_INST_2,
+            TWO_WORD_INST_3: begin
+               if (stored_branch_link == TAKE_BRANCH) begin
+                   take_branch_internal = TAKE_BRANCH;
+                   program_counter_o =    program_counter_internal + immediate_i;
+                   next_branch_link =     NO_STORE_BRANCH;
+               end
+               else begin
+                   next_branch_link = STORE_BRANCH;
+               end
+            end
+        default:;
         endcase 
 
         take_branch_o = is_valid_i & take_branch_internal;
         flush_pipeline_o = is_valid_i & take_branch_internal;
+    end
+
+    always_ff @(posedge clk_i) begin
+        if (reset_i)
+            stored_branch_link <= NO_TAKE_BRANCH;
+        else 
+            stored_branch_link <= next_branch_link;
     end
 
 endmodule

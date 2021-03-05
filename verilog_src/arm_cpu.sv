@@ -37,8 +37,8 @@ module arm_cpu(
     update_flag_sig         update_flag_DECODE_TO_EXE;
     alu_control_signal      alu_control_signal_DECODE_TO_EXE;
     reg_2_reg_3_select_sig  reg_2_reg_3_select_DECODE_TO_EXE;
+    instruction             instruction_DECODE_TO_EXE;
     logic                   is_valid_DECODE_TO_EXE;
-    logic [7:0]             opA_opB_DECODE_TO_EXE;
     logic [ADDR_WIDTH-1:0]  reg_1_source_addr_DECODE_TO_EXE;
     logic [ADDR_WIDTH-1:0]  reg_2_source_addr_DECODE_TO_EXE;
     logic [ADDR_WIDTH-1:0]  reg_3_source_addr_DECODE_TO_EXE;
@@ -144,7 +144,7 @@ module arm_cpu(
                         .pipeline_ctrl_sig_o(pipeline_stall_FROM_DECODE),
                         .reg_2_reg_3_select_sig_o(reg_2_reg_3_select_DECODE_TO_EXE),
                         .is_valid_o(is_valid_DECODE_TO_EXE),
-                        .op_cond_o(opA_opB_DECODE_TO_EXE),
+                        .instruction_o(instruction_DECODE_TO_EXE),
                         .accumulator_imm_o(accumulator_imm_DECODE_TO_EXE),
                         .reg_1_source_addr_o(reg_1_source_addr_DECODE_TO_EXE),
                         .reg_2_source_addr_o(reg_2_source_addr_DECODE_TO_EXE),
@@ -171,7 +171,7 @@ module arm_cpu(
                          .reg_write_en_WB_i(reg_file_write_en_MEM_TO_WB),   //the EXE stage
                          .reg_2_reg_3_select_sig_i(reg_2_reg_3_select_DECODE_TO_EXE),
                          .is_valid_i(is_valid_DECODE_TO_EXE),
-                         .op_cond_i(opA_opB_DECODE_TO_EXE),
+                         .instruction_i(instruction_DECODE_TO_EXE),
                          .reg_1_source_addr_i(reg_1_source_addr_DECODE_TO_EXE),
                          .reg_2_source_addr_i(reg_2_source_addr_DECODE_TO_EXE),
                          .reg_3_source_addr_i(reg_3_source_addr_DECODE_TO_EXE),

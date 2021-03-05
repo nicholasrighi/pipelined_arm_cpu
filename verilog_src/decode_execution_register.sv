@@ -15,7 +15,7 @@ module decode_execution_register
                                     input reg_2_reg_3_select_sig      reg_2_reg_3_select_sig_i,
                                     input flush_pipeline_sig          flush_pipeline_i,
                                     input logic                       is_valid_i,
-                                    input logic [7:0]                 op_cond_i,
+                                    input instruction                 instruction_i,
                                     input logic [ADDR_WIDTH-1:0]      reg_1_source_addr_i,
                                     input logic [ADDR_WIDTH-1:0]      reg_2_source_addr_i,
                                     input logic [ADDR_WIDTH-1:0]      reg_3_source_addr_i,
@@ -34,7 +34,7 @@ module decode_execution_register
                                     output update_flag_sig            update_flag_o,
                                     output reg_2_reg_3_select_sig     reg_2_reg_3_select_sig_o,
                                     output logic                      is_valid_o,
-                                    output logic [7:0]                op_cond_o,
+                                    output instruction                instruction_o,
                                     output logic [ADDR_WIDTH-1:0]     reg_1_source_addr_o,
                                     output logic [ADDR_WIDTH-1:0]     reg_2_source_addr_o,
                                     output logic [ADDR_WIDTH-1:0]     reg_3_source_addr_o,
@@ -52,7 +52,7 @@ module decode_execution_register
        else
             is_valid_o            <= is_valid_i;
 
-      op_cond_o                   <= op_cond_i;
+      instruction_o               <= instruction_i;
       mem_write_en_o              <= mem_write_en_i;
       mem_read_en_o               <= mem_read_en_i;
       reg_file_write_en_o         <= reg_file_write_en_i;

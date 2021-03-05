@@ -7,9 +7,7 @@
 	parameter BYTE			= 8;
 	parameter ADDR_WIDTH 	= 4;
 	parameter SP_REG_NUM	= 13;
-	// verilator lint_off UNUSED
 	parameter LR_REG_NUM	= 14;
-	// verilator lint_on UNUSED
 	parameter PC_REG_NUM	= 15;
 
 	typedef enum logic [5:0] {
@@ -28,7 +26,10 @@
 		STORE_MULT_REG  = 6'b11000?,
 		LOAD_MULT_REG	= 6'b11001?,
 		COND_BRANCH		= 6'b1101??,
-		UNCOND_BRANCH	= 6'b11100?
+		UNCOND_BRANCH	= 6'b11100?,
+		TWO_WORD_INST_1 = 6'b11101?,
+		TWO_WORD_INST_2 = 6'b11110?,
+		TWO_WORD_INST_3 = 6'b11111?
 	} opcode;
 
 	typedef struct packed {
@@ -71,6 +72,8 @@
 	parameter ADD_REG_SPECIAL	= 4'b00??;
 	parameter MOVE_REG_SPECIAL  = 4'b10??;
 	parameter CMP_REG_SPECIAL	= 4'b011?;	//TODO: check if this is the only encoding of cmp register for special insturction
+	parameter BRANCH_EXCH 		= 4'b110?;
+	parameter BRANCH_LINK_EXCH 	= 4'b111?;
 
 	// codes for misc 16 bit instructions
 	parameter ADD_IMM_SP		= 7'b00000??;
@@ -106,8 +109,13 @@
 	parameter LE = 4'b1101;
 	parameter AL = 4'b1110;
 
+	// offset for PC to change value by 2
+	parameter HALFWORD_OFFSET = 32'd2;
+
 	typedef enum logic [2:0] {FROM_REG, FROM_IMM,  
-					FROM_ACCUMULATOR, FROM_ZERO, FROM_PC}				alu_input_source;
+					FROM_ACCUMULATOR, FROM_ZERO, FROM_PC, FROM_TWO}		alu_input_source;
+
+	typedef enum logic {NO_STORE_BRANCH = 0, STORE_BRANCH}				branch_link_status;
 					
 	typedef enum logic {FROM_ALU,FROM_MEMORY}							reg_file_data_source;
 	typedef enum logic {NO_REG_WRITE = 0, REG_WRITE}					reg_file_write_sig;

@@ -2,6 +2,7 @@
 
 module execution_datapath(
                             input logic                     clk_i,
+                            input logic                     reset_i,
                             input logic                     is_valid_i,
                             input logic                     update_flag_i,
                             input reg_2_reg_3_select_sig    reg_2_reg_3_select_sig_i,
@@ -10,7 +11,7 @@ module execution_datapath(
                             input alu_input_source          alu_input_2_select_i,
                             input reg_file_write_sig        reg_write_en_MEM_i,
                             input reg_file_write_sig        reg_write_en_WB_i,
-                            input logic [7:0]               op_cond_i,
+                            input instruction               instruction_i,
                             input logic [ADDR_WIDTH-1:0]    reg_addr_1_DECODE_i,
                             input logic [ADDR_WIDTH-1:0]    reg_addr_2_DECODE_i,
                             input logic [ADDR_WIDTH-1:0]    reg_addr_3_DECODE_i,
@@ -98,6 +99,7 @@ module execution_datapath(
 
         alu_wrapper wrapped_alu (
                                     .clk_i(clk_i),
+                                    .reset_i(reset_i),
                                     .update_flag_i(update_flag_i & is_valid_i),
                                     .alu_ctrl_sig_i(alu_ctrl_sig_i),
                                     .alu_input_1_select_i(alu_input_1_select_i),
@@ -113,12 +115,17 @@ module execution_datapath(
         );
 
         branch_controller b_controller(
+                                    .clk_i(clk_i),
+                                    .reset_i(reset_i),
                                     .is_valid_i(is_valid_i),
                                     .status_reg_i(status_reg_internal),
-                                    .op_cond_i(op_cond_i),
+                                    .instruction_i(instruction_i),
                                     .program_counter_i(program_counter_i),
                                     .immediate_i(immediate_i),
-                                    .reg_data_i(reg_data_2_DECODE_i),
+                                    // TODO. Check forwarding with branch instrucitons. This should make sure that the forwarded value is used, but
+                                    // need to verify
+                                    .reg_data_1_i(final_alu_reg_input_1_data_internal),
+                                    .reg_data_2_i(final_alu_reg_input_2_data_internal),
 
                                     .take_branch_o(take_branch_o),
                                     .flush_pipeline_o(flush_pipeline_o),

@@ -11,8 +11,8 @@ module imm_gen(
     logic J_1;
     logic J_2;
     logic S;
-    logic [10:0] stored_immediate;
-    logic [9:0]  current_immediate;
+    logic [9:0]   stored_immediate;
+    logic [10:0]  current_immediate;
 
     // this is used for 32 bit instructions, since those require saving the 
     // first 16 bits of the instruction to determine the full behavior
@@ -24,13 +24,13 @@ module imm_gen(
 
         // extract fields from current instruction
         op =                instruction_i[15:10];
-        current_immediate = instruction_i[9:0];
-        S  =                instruction_i[10];
-
+        current_immediate = instruction_i[10:0];
+        J_1 =               instruction_i[13];
+        J_2 =               instruction_i[11];
+        
         // extract fields from stored instruction
-        stored_immediate =  stored_instruction[10:0];
-        J_1 =               stored_instruction[13];
-        J_2 =               stored_instruction[11];
+        stored_immediate  = stored_instruction[9:0];
+        S  =                stored_instruction[10];
 
         casez(op)
             SHIFT_IMM: begin
@@ -66,8 +66,15 @@ module imm_gen(
             // TODO: check if we need to sign extend all other values
             COND_BRANCH:        immediate_value_o = 32'(signed'( {instruction_i[7:0],1'b0} ));
             UNCOND_BRANCH:      immediate_value_o = 32'(signed'( {instruction_i[10:0],1'b0} ));
-            // TODO: Fix this SPECIAL case, it's wrong, should be some branch instruction
-            SPECIAL: immediate_value_o = {S, ~(J_1 ^ S), ~(J_2 ^ S), current_immediate, stored_immediate, 8'b0};
+            // the only immediate value needed from the special instructions is 2 (needed for Branch and link with exchange)
+            SPECIAL:            immediate_value_o = 32'd2;
+            TWO_WORD_INST_1,
+            TWO_WORD_INST_2,
+            TWO_WORD_INST_3:    
+                // we need to subtract 2 from the PC value since the 2 word instruction starts 2 bytes before the current pc value. The 
+                // current half value is halfway inside the current instruction, when in reality it should be at the beginning of the entire
+                // instruction
+                immediate_value_o = 32'(signed'({S, ~(J_1 ^ S), ~(J_2 ^ S), stored_immediate, current_immediate, 1'0})) - HALFWORD_OFFSET;
             default: immediate_value_o = 32'bx;
         endcase
     end
