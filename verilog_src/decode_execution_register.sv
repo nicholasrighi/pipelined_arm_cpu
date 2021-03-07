@@ -44,6 +44,8 @@ module decode_execution_register
                                     output logic [WORD-1:0]           program_counter_o
                                     );
 
+     logic mem_read_en_internal;
+
     always_ff @(posedge clk_i) begin
        if (reset_i) 
             is_valid_o            <= 1'b0;
@@ -54,7 +56,7 @@ module decode_execution_register
 
       instruction_o               <= instruction_i;
       mem_write_en_o              <= mem_write_en_i;
-      mem_read_en_o               <= mem_read_en_i;
+      mem_read_en_internal        <= mem_read_en_i;
       reg_file_write_en_o         <= reg_file_write_en_i;
       reg_file_input_ctrl_sig_o   <= reg_file_input_ctrl_sig_i;
       alu_input_1_select_o        <= alu_input_1_select_i;
@@ -70,5 +72,7 @@ module decode_execution_register
       reg_2_reg_3_select_sig_o    <= reg_2_reg_3_select_sig_i;
       program_counter_o           <= program_counter_i;
     end
+
+    assign mem_read_en_o = mem_read_en_internal & is_valid_o;
 
 endmodule

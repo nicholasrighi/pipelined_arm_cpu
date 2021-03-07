@@ -31,6 +31,7 @@ module alu_wrapper(
                         FROM_ZERO:              alu_data_in_1_internal = 32'b0;
                         FROM_ACCUMULATOR:       alu_data_in_1_internal = accumulator_i;
                         FROM_PC:                alu_data_in_1_internal = program_counter_i;
+                        FROM_PC_ALIGNED:        alu_data_in_1_internal = {program_counter_i[31:2],2'b00};
                         FROM_TWO:               alu_data_in_1_internal = 32'd2;
                         default: ;
                 endcase
@@ -41,6 +42,7 @@ module alu_wrapper(
                         FROM_ZERO:              alu_data_in_2_internal = 32'b0;
                         FROM_ACCUMULATOR:       alu_data_in_2_internal = accumulator_i;
                         FROM_PC:                alu_data_in_2_internal = program_counter_i;
+                        FROM_PC_ALIGNED:        alu_data_in_2_internal = {program_counter_i[31:2],2'b00};
                         FROM_TWO:               alu_data_in_2_internal = 32'd2;
                         default: ;
                 endcase

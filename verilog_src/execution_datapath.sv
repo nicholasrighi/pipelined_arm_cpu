@@ -24,7 +24,8 @@ module execution_datapath(
                             input logic [WORD-1:0]          reg_data_WB_i,
                             input logic [WORD-1:0]          accumulator_i,
                             input logic [WORD-1:0]          immediate_i,
-                            input logic [WORD-1:0]          program_counter_i,
+                            // this is addr instruction + 4, so offset is included in this input
+                            input logic [WORD-1:0]          program_counter_i,  
 
                             output take_branch_ctrl_sig     take_branch_o,
                             output flush_pipeline_sig       flush_pipeline_o,
@@ -122,8 +123,6 @@ module execution_datapath(
                                     .instruction_i(instruction_i),
                                     .program_counter_i(program_counter_i),
                                     .immediate_i(immediate_i),
-                                    // TODO. Check forwarding with branch instrucitons. This should make sure that the forwarded value is used, but
-                                    // need to verify
                                     .reg_data_1_i(final_alu_reg_input_1_data_internal),
                                     .reg_data_2_i(final_alu_reg_input_2_data_internal),
 

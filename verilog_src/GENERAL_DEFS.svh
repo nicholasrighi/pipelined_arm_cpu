@@ -113,7 +113,8 @@
 	parameter HALFWORD_OFFSET = 32'd2;
 
 	typedef enum logic [2:0] {FROM_REG, FROM_IMM,  
-					FROM_ACCUMULATOR, FROM_ZERO, FROM_PC, FROM_TWO}		alu_input_source;
+					FROM_ACCUMULATOR, FROM_ZERO, FROM_PC, FROM_TWO,
+					FROM_PC_ALIGNED}									alu_input_source;
 
 	typedef enum logic {NO_STORE_BRANCH = 0, STORE_BRANCH}				branch_link_status;
 					

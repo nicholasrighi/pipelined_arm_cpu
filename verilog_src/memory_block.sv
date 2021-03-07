@@ -22,6 +22,8 @@ module memory_block(
 
     data_mem data_ram (
                     .clk(clk_i),
+                    // need to AND is_valid with mem_write to ensure that invalidated instructions dont have 
+                    // a visible effect on the system
                     .mem_write_en(is_valid_i & mem_write_en_i),
                     .opCode(opA_opB_i),
                     .mem_addr(alu_data_i),

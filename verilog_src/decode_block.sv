@@ -3,9 +3,7 @@
 module decode_block(
                         input logic                   clk_i,
                         input logic                   reset_i,
-                        input logic                   is_valid_i,          //TODO. Need to AND is valid_i w/ ~flush_pipeline signal when we implement branching
-                                                                     //TODO. Need to also AND valid_i w/ the update flag signal, and all control signals in general
-                                                                     //Actually it makes more sense to do the AND'ing when the signals are used
+                        input logic                   is_valid_i,          
                         input logic                   reg_file_write_en_i,
                         input mem_read_signal         mem_read_EXE_i,
                         input logic [ADDR_WIDTH-1:0]  reg_dest_addr_i,

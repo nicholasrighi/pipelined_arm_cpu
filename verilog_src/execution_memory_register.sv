@@ -6,7 +6,7 @@ module execution_memory_register(
                                 input logic                 is_valid_i,
                                 input logic                 mem_write_en_i,
                                 input logic                 reg_file_write_en_i,
-                                input logic [7:0]           op_cond_i,
+                                input logic [6:0]           opA_opB_i,
                                 input reg_file_data_source  reg_file_data_source_i,
                                 input logic [ADDR_WIDTH-1:0] reg_dest_addr_i, 
                                 input logic [WORD-1:0]      alu_result_i,
@@ -15,7 +15,7 @@ module execution_memory_register(
                                 output logic                 is_valid_o,
                                 output logic                 mem_write_en_o,
                                 output logic                 reg_file_write_en_o,
-                                output logic [7:0]           op_cond_o,
+                                output logic [6:0]           opA_opB_o,
                                 output reg_file_data_source  reg_file_data_source_o,
                                 output logic [ADDR_WIDTH-1:0] reg_dest_addr_o,
                                 output logic [WORD-1:0]      alu_result_o,
@@ -28,7 +28,7 @@ module execution_memory_register(
           else
                is_valid_o              <= is_valid_i;
 
-          op_cond_o               <= op_cond_i;
+          opA_opB_o               <= opA_opB_i;
           mem_write_en_o          <= mem_write_en_i;
           reg_file_write_en_o     <= reg_file_write_en_i;
           reg_file_data_source_o  <= reg_file_data_source_i;

@@ -255,50 +255,50 @@ module cpu_controller(
                         update_flag_o         = UPDATE_FLAG;
                     end
                     BRANCH_LINK_EXCH: begin
-                       alu_control_signal_o =  ALU_ADD; 
+                       alu_control_signal_o =  ALU_SUB; 
                        alu_input_1_select_o =  FROM_PC;
-                       alu_input_2_select_o =  FROM_IMM;
+                       alu_input_2_select_o =  FROM_TWO;
                        reg_write_en_o =        REG_WRITE;
                     end
                     BRANCH_EXCH: ;
                     default:    ;
                 endcase
             end
-            // TODO: check PC alignement? Seems to need to be aligned to an offset of 4, which requries removing the last 2 bits
-            // even though the PC can be any multiple of 2
             LOAD_LITERAL: begin
                 mem_read_en_o =        MEM_READ;
                 reg_write_en_o =       REG_WRITE;
+                alu_input_1_select_o = FROM_PC_ALIGNED;
                 alu_input_2_select_o = FROM_IMM;
             end
             LOAD_STORE_REG: begin
-                // TODO: check if this mem_read should be inside the load condition. If we leave it outside it will still work, but 
-                // any stores will have an unnecessary stall since the hazard detector will think it needs to stall. Or maybe not, since
-                // the hazard detector also looks for write_reg when checking. 
-                mem_read_en_o =          MEM_READ;
-                reg_file_data_source_o = FROM_MEMORY;
-                // check if the insruction is a load, and if it is write to reg file. If it's not a load it's a store,
-                // so set mem write
-                if (instruction_i[11] || (instruction_i[10:9] == 2'b11)) 
-                    reg_write_en_o =   REG_WRITE;
+                if (instruction_i[11] || (instruction_i[10:9] == 2'b11)) begin 
+                    reg_file_data_source_o = FROM_MEMORY;
+                    mem_read_en_o =          MEM_READ;
+                    reg_write_en_o =         REG_WRITE;
+                end
                 else begin
-                    mem_write_en_o =   MEM_WRITE;
-                    reg_2_reg_3_select_sig_o = SELECT_REG_3;
+                    mem_write_en_o =            MEM_WRITE;
+                    reg_2_reg_3_select_sig_o =  SELECT_REG_3;
                 end
             end
             LOAD_STORE_IMM, 
             LOAD_STORE_BYTE,
             LOAD_STORE_HW,
             LOAD_STORE_SP_R: begin
-                mem_read_en_o =          MEM_READ;
                 alu_input_2_select_o =   FROM_IMM;
                 reg_file_data_source_o = FROM_MEMORY;
-                if (instruction_i[11])
+                if (instruction_i[11]) begin
                     reg_write_en_o =     REG_WRITE; 
+                    mem_read_en_o =      MEM_READ;
+                end
                 else 
                     mem_write_en_o =     MEM_WRITE;
             end
-            GEN_PC_REL, 
+            GEN_PC_REL: begin
+                reg_write_en_o =       REG_WRITE;
+                alu_input_1_select_o = FROM_PC_ALIGNED;
+                alu_input_2_select_o = FROM_IMM;
+            end
             GEN_SP_REL: begin
                 reg_write_en_o =       REG_WRITE;
                 alu_input_2_select_o = FROM_IMM;
@@ -342,9 +342,8 @@ module cpu_controller(
                         end
                     end
                     // TODO: implement branching on POP registers if PC is one of the popped registers
-                    // TODO: check mem read signal for all loads, including pop and LDM
-                    // TODO: check if mem read is needed for LDM/POP. I dont think it is, since both instructions have a reg write after
-                    // they load, which is the same as a delay slot. But should check anyways
+                    // See the note on LOAD_MULTIPLE_REG for an explination of why read_mem isn't asserted 
+                    // for this instruction
                     POP_MUL_REG: begin
                         reg_list_from_instruction = {instruction_i[8],7'b0,instruction_i[7:0]};
                         pipeline_ctrl_signal_o =    (bit_count(reg_list_from_instruction & hold_counter) != 5'b0);
@@ -380,6 +379,12 @@ module cpu_controller(
                     reg_dest_addr_source_o = ADDR_FROM_CTRL_UNIT;
                 end
             end
+            // LDM always has a final step after the reigster list has been loaded where it checks if the base
+            // register needs to be updated. Since this step occurs there's no need to assert mem read, since
+            // the last register to be loaded will be in the write back stage when the next instruction is in the 
+            // execution stage (since the check for updating the base register will be in the memory stage, and fills
+            // the purpose of the delay slot for loading + using data from that load). This also applies to the POP
+            // instruction for the same reason
             LOAD_MULT_REG: begin
                 reg_file_data_source_o =    FROM_MEMORY;
                 reverse_order_hold_counter = REV_LOAD_COUNTER;
@@ -409,8 +414,11 @@ module cpu_controller(
                     next_branch_link = STORE_BRANCH;
                if (stored_branch_link == STORE_BRANCH) begin
                     reg_write_en_o =       REG_WRITE;
-                    alu_control_signal_o = ALU_ADD; 
+                    alu_control_signal_o = ALU_SUB; 
                     alu_input_1_select_o = FROM_PC;
+                    // since the PC points to the middle of the 32 bit instruction, the pc the execution
+                    // block uses is actually 2 bytes ahead of the pc we want. So we need to subtract 
+                    // 2 from the pc in order to create the correct value
                     alu_input_2_select_o = FROM_TWO;
                end
             end

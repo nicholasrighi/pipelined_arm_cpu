@@ -8,8 +8,6 @@ module arm_cpu(
                 input logic [WORD-1:0]      instruction_addr_i
                 );
 
-    // TODO: Check that all control signals (all writes, reads, etc) are AND'd with is_valid
-
     //////////////////////////////////////
     //      PROGRAM COUNTER SIGNAL      //
     //////////////////////////////////////
@@ -57,14 +55,12 @@ module arm_cpu(
     mem_write_signal        mem_write_en_EXE_TO_MEM;
     reg_file_write_sig      reg_file_write_en_EXE_TO_MEM;
     reg_file_data_source    reg_file_data_source_EXE_TO_MEM;
-    // verilator lint_off UNUSED
-    logic [7:0]             opA_opB_EXE_TO_MEM;
-    // verilator lint_on UNUSED
+    logic [6:0]             opA_opB_EXE_TO_MEM;
     logic [ADDR_WIDTH-1:0]  reg_dest_addr_EXE_TO_MEM;
     logic [WORD-1:0]        alu_result_EXE_TO_MEM;
     logic [WORD-1:0]        reg_2_data_EXE_TO_MEM;
     
-    // these are the branch control signals
+    // these are the branch control signals from the exe stage
     take_branch_ctrl_sig    take_branch_EXE_TO_PC;
     flush_pipeline_sig      flush_pipeline_FROM_EXE;
     logic [WORD-1:0]        program_counter_EXE_TO_PC;
@@ -126,6 +122,9 @@ module arm_cpu(
                         .reset_i(reset_i),
                         .is_valid_i(is_valid_FETCH_TO_DECODE),
                         .flush_pipeline_i(flush_pipeline_FROM_EXE),
+                        // the mem_read signal that leaves the decode block is the 
+                        // signal that we want to read to determine if the instruction
+                        // in the EXE stage is a load
                         .mem_read_EXE_i(mem_read_en_DECODE_TO_EXE),
                         .reg_file_write_en_i(reg_file_write_en_WB_TO_DECODE),
                         .reg_data_i(reg_data_WB_TO_DECODE),
@@ -167,8 +166,8 @@ module arm_cpu(
                          .alu_input_1_select_i(alu_input_1_select_DECODE_TO_EXE),
                          .alu_input_2_select_i(alu_input_2_select_DECODE_TO_EXE),
                          .alu_control_signal_i(alu_control_signal_DECODE_TO_EXE),
-                         .reg_write_en_MEM_i(reg_file_write_en_EXE_TO_MEM), //the write enable signal that comes from MEM stage is the same one that leaves
-                         .reg_write_en_WB_i(reg_file_write_en_MEM_TO_WB),   //the EXE stage
+                         .reg_write_en_MEM_i(reg_file_write_en_EXE_TO_MEM),
+                         .reg_write_en_WB_i(reg_file_write_en_MEM_TO_WB), 
                          .reg_2_reg_3_select_sig_i(reg_2_reg_3_select_DECODE_TO_EXE),
                          .is_valid_i(is_valid_DECODE_TO_EXE),
                          .instruction_i(instruction_DECODE_TO_EXE),
@@ -176,21 +175,21 @@ module arm_cpu(
                          .reg_2_source_addr_i(reg_2_source_addr_DECODE_TO_EXE),
                          .reg_3_source_addr_i(reg_3_source_addr_DECODE_TO_EXE),
                          .reg_dest_addr_i(reg_dest_addr_DECODE_TO_EXE),
-                         .reg_dest_MEM_i(reg_dest_addr_EXE_TO_MEM),   //this is the same as the reg_dest_addr that leaves the EXE stage
+                         .reg_dest_MEM_i(reg_dest_addr_EXE_TO_MEM),  
                          .reg_dest_WB_i(reg_dest_addr_WB_TO_DECODE),
                          .accumulator_imm_i(accumulator_imm_DECODE_TO_EXE),
                          .immediate_i(immediate_DECODE_TO_EXE),
                          .reg_1_data_i(reg_1_data_DECODE_TO_EXE),
                          .reg_2_data_i(reg_2_data_DECODE_TO_EXE),
                          .reg_3_data_i(reg_3_data_DECODE_TO_EXE),
-                         .reg_data_MEM_i(alu_result_EXE_TO_MEM),             //TODO. check that this is the correct signal. It might need to be second reg data?
+                         .reg_data_MEM_i(alu_result_EXE_TO_MEM), 
                          .reg_data_WB_i(reg_data_WB_TO_DECODE),
                          .program_counter_i(program_counter_DECODE_TO_EXE),
                          
                          .is_valid_o(is_valid_EXE_TO_MEM),
                          .flush_pipeline_o(flush_pipeline_FROM_EXE),
                          .mem_write_en_o(mem_write_en_EXE_TO_MEM),
-                         .op_cond_o(opA_opB_EXE_TO_MEM),
+                         .opA_opB_o(opA_opB_EXE_TO_MEM),
                          .reg_file_write_en_o(reg_file_write_en_EXE_TO_MEM),
                          .reg_file_data_source_o(reg_file_data_source_EXE_TO_MEM),
                          .reg_dest_addr_o(reg_dest_addr_EXE_TO_MEM),

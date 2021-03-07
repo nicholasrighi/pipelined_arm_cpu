@@ -10,7 +10,9 @@ module branch_controller(
                             // verilator lint_on UNUSED
                             input logic [WORD-1:0]      program_counter_i,
                             input logic [WORD-1:0]      reg_data_1_i,
+                            // verilator lint_off UNUSED
                             input logic [WORD-1:0]      reg_data_2_i,
+                            // verilator lint_on UNUSED
                             input logic [WORD-1:0]      immediate_i,
 
                             output take_branch_ctrl_sig take_branch_o,
@@ -23,25 +25,17 @@ module branch_controller(
     logic take_branch_internal;
     logic [3:0] branch_condition;
 
-    // NOTE: ALL REFERENCES TO THE PC MUST USE PROGRAM_COUNTER_INTERNAL, NOT PROGRAM_COUNTER_I
-    logic [WORD-1:0] program_counter_internal;
-
     always_comb begin
 
         branch_condition =  instruction_i[11:8];
         next_branch_link =  NO_STORE_BRANCH;
 
-        // This is to account for the offset that arm requires the PC and the current instruction
-        // to have
-        program_counter_internal = program_counter_i + 32'd4;
-
         take_branch_internal =  NO_TAKE_BRANCH;
-        flush_pipeline_o =      take_branch_internal;
         program_counter_o =     'x;
 
         casez(instruction_i.op)
             COND_BRANCH: begin
-                program_counter_o = program_counter_internal + immediate_i;
+                program_counter_o = program_counter_i + immediate_i;
                 casez(branch_condition)
                     EQ: take_branch_internal = (status_reg_i.zero_flag == 1'b1);
                     NE: take_branch_internal = (status_reg_i.zero_flag == 1'b0);
@@ -63,17 +57,15 @@ module branch_controller(
             end
             UNCOND_BRANCH: begin
                 take_branch_internal = TAKE_BRANCH;
-                program_counter_o =    program_counter_internal + immediate_i;
+                program_counter_o =    program_counter_i + immediate_i;
             end
             SPECIAL: begin
                casez(instruction_i[9:6])
-               // TODO. Make sure that controller, addr decoder, and this module all agree on 
-               // which input the data is coming in on (reg_data_1 or reg_data_2)
                     ADD_REG_SPECIAL: begin
                        // we only take this branch if the PC is the destination register
                        if ({instruction_i[7],instruction_i[2:0]} == PC_REG_NUM) begin
-                          take_branch_internal =     TAKE_BRANCH;
-                          program_counter_o = reg_data_1_i + reg_data_2_i; 
+                          take_branch_internal =    TAKE_BRANCH;
+                          program_counter_o =       program_counter_i + reg_data_1_i; 
                        end
                     end
                     MOVE_REG_SPECIAL: begin
@@ -96,7 +88,7 @@ module branch_controller(
             TWO_WORD_INST_3: begin
                if (stored_branch_link == TAKE_BRANCH) begin
                    take_branch_internal = TAKE_BRANCH;
-                   program_counter_o =    program_counter_internal + immediate_i;
+                   program_counter_o =    program_counter_i + immediate_i;
                    next_branch_link =     NO_STORE_BRANCH;
                end
                else begin

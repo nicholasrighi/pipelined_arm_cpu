@@ -34,8 +34,8 @@ module alu(
         ALU_AND:                alu_result_o = data_in_1_i & data_in_2_i;
         ALU_OR:                 alu_result_o = data_in_1_i | data_in_2_i;
         ALU_XOR:                alu_result_o = data_in_1_i ^ data_in_2_i;
-        ALU_ROTATE_R:           alu_result_o = 32'b1;                   //TODO: FIX THIS, PLACEHOLDER
-        ALU_MULT:               alu_result_o = WORD'(data_in_1_i * data_in_2_i);    //TODO: Ask about this? it takes ~1600 LUTS, which seems high
+        ALU_ROTATE_R:           alu_result_o = (data_in_1_i << (32-data_in_2_i[BYTE-1:0])) | (data_in_1_i >> data_in_2_i[BYTE-1:0]);
+        ALU_MULT:               alu_result_o = WORD'(data_in_1_i * data_in_2_i); 
         ALU_NOT:                alu_result_o = ~data_in_1_i;
         ALU_BIT_CLEAR:          alu_result_o = data_in_1_i & (~data_in_2_i);
         ALU_S_EXTEND_HW:        alu_result_o = {{16{data_in_1_i[HALF_WORD-1]}},data_in_1_i[HALF_WORD-1:0]};

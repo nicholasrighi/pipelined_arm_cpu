@@ -36,7 +36,7 @@ module execution_block(
                         output reg_file_data_source  reg_file_data_source_o,
                         output take_branch_ctrl_sig  take_branch_o,
                         output flush_pipeline_sig    flush_pipeline_o,
-                        output logic [7:0]           op_cond_o,
+                        output logic [6:0]           opA_opB_o,
                         output logic [ADDR_WIDTH-1:0] reg_dest_addr_o,
                         output logic [WORD-1:0]      alu_result_o,
                         output logic [WORD-1:0]      reg_2_data_o,       //TODO: change this name to store_reg_data from reg_2_data, since reg3 or reg2 data 
@@ -46,6 +46,9 @@ module execution_block(
 
         logic [WORD-1:0] alu_result_internal;
         logic [WORD-1:0] reg_2_data_internal;
+        logic [WORD-1:0] two_instruction_ahead_pc;
+
+        assign two_instruction_ahead_pc = program_counter_i + 32'd4;
         
         execution_datapath exe_datapath(
                             .clk_i(clk_i),
@@ -71,7 +74,7 @@ module execution_block(
                             .reg_data_WB_i(reg_data_WB_i),
                             .accumulator_i(accumulator_imm_i),
                             .immediate_i(immediate_i),
-                            .program_counter_i(program_counter_i),
+                            .program_counter_i(two_instruction_ahead_pc),
                             
                             .alu_result_o(alu_result_internal),
                             .reg_2_data_o(reg_2_data_internal),
@@ -87,8 +90,7 @@ module execution_block(
                                 .mem_write_en_i(mem_write_en_i),
                                 .reg_file_write_en_i(reg_file_write_en_i),
                                 .reg_file_data_source_i(reg_file_data_source_i),
-                                // TODO. rewrite this signal so it's back to opA_opB. Also check that loads/stores still work
-                                .op_cond_i(instruction_i[15:8]),
+                                .opA_opB_i(instruction_i[15:9]),
                                 .reg_dest_addr_i(reg_dest_addr_i),
                                 .alu_result_i(alu_result_internal),
                                 .reg_2_data_i(reg_2_data_internal),          
@@ -97,7 +99,7 @@ module execution_block(
                                 .mem_write_en_o(mem_write_en_o),
                                 .reg_file_write_en_o(reg_file_write_en_o),
                                 .reg_file_data_source_o(reg_file_data_source_o),
-                                .op_cond_o(op_cond_o),
+                                .opA_opB_o(opA_opB_o),
                                 .reg_dest_addr_o(reg_dest_addr_o),
                                 .alu_result_o(alu_result_o),
                                 .reg_2_data_o(reg_2_data_o)

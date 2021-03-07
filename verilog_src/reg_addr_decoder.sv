@@ -54,8 +54,8 @@ module reg_addr_decoder(
             SPECIAL: begin
                 casez(instruction_i[9:6])
                     ADD_REG_SPECIAL: begin
-                        reg_addr_1_o =      {instruction_i[7], instruction_i[2:0]};
-                        reg_addr_2_o =      4'(instruction_i[6:3]);  
+                        reg_addr_1_o =      4'(instruction_i[6:3]);  
+                        reg_addr_2_o =      {instruction_i[7], instruction_i[2:0]};
                         reg_dest_addr_o =   {instruction_i[7],instruction_i[2:0]};
                     end
                     MOVE_REG_SPECIAL: begin
@@ -68,7 +68,6 @@ module reg_addr_decoder(
                     end
                     BRANCH_EXCH,
                     BRANCH_LINK_EXCH: begin
-                        // TODO: Check that the control unit assumes the data is on reg 1, and not reg 2
                         reg_dest_addr_o = LR_REG_NUM;
                         reg_addr_1_o =    instruction_i[6:3];
                     end

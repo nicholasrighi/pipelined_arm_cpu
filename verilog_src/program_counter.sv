@@ -13,7 +13,6 @@ module program_counter(
 
     // the start address is 2 since on reset the instruction memory outputs the instruction
     // at address 0, and we don't want to execute the same instruction twice
-    //TODO: check what r15 should be on reset
     localparam START_ADDR = 32'd0;
     // Since we're in thumb mode each instruction is 2 bytes, so we increment by 2
     localparam INCREMENT_VALUE = 32'd2;

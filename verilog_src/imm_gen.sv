@@ -50,7 +50,9 @@ module imm_gen(
                     default: immediate_value_o = 'x;
                 endcase
             end
-            LOAD_LITERAL:       immediate_value_o = 32'({instruction_i[7:0], 2'b0});
+            // the +4 offset is to account for the fact that the PC is the current instruction addr, and it 
+            // needs to be the current instruction addr + 4
+            LOAD_LITERAL:       immediate_value_o = 32'({instruction_i[7:0], 2'b0}) + 32'd4;
             LOAD_STORE_IMM:     immediate_value_o = 32'({instruction_i[10:6],2'b0});
             LOAD_STORE_BYTE:    immediate_value_o = 32'(instruction_i[10:6]);
             LOAD_STORE_HW:      immediate_value_o = 32'({instruction_i[10:6],1'b0});
@@ -63,11 +65,9 @@ module imm_gen(
                     default:    immediate_value_o = 'x;
                 endcase
             end
-            // TODO: check if we need to sign extend all other values
             COND_BRANCH:        immediate_value_o = 32'(signed'( {instruction_i[7:0],1'b0} ));
             UNCOND_BRANCH:      immediate_value_o = 32'(signed'( {instruction_i[10:0],1'b0} ));
-            // the only immediate value needed from the special instructions is 2 (needed for Branch and link with exchange)
-            SPECIAL:            immediate_value_o = 32'd2;
+            SPECIAL: ;
             TWO_WORD_INST_1,
             TWO_WORD_INST_2,
             TWO_WORD_INST_3:    

@@ -28,8 +28,6 @@ module clocked_reg_file(
     logic [WORD-1:0] stored_read_3_data;
     logic [WORD-1:0] stored_write_data;
 
-    // TODO: check how to manage reading the program counter, especially in the case of forwarding
-
     // determine if we need to output forwarded data or old data
     always_comb begin
         reg_data_1_o = stored_read_1_data;
