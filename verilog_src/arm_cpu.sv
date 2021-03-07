@@ -126,6 +126,7 @@ module arm_cpu(
                         // signal that we want to read to determine if the instruction
                         // in the EXE stage is a load
                         .mem_read_EXE_i(mem_read_en_DECODE_TO_EXE),
+                        .mem_reg_dest_addr_i(reg_dest_addr_DECODE_TO_EXE),
                         .reg_file_write_en_i(reg_file_write_en_WB_TO_DECODE),
                         .reg_data_i(reg_data_WB_TO_DECODE),
                         .reg_dest_addr_i(reg_dest_addr_WB_TO_DECODE),

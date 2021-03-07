@@ -346,12 +346,13 @@ module cpu_controller(
                     // for this instruction
                     POP_MUL_REG: begin
                         reg_list_from_instruction = {instruction_i[8],7'b0,instruction_i[7:0]};
+                        // once the pipeline_ctrl signal goes low, we know that we've 
                         pipeline_ctrl_signal_o =    (bit_count(reg_list_from_instruction & hold_counter) != 5'b0);
                         accumulator_imm_o =         4*accumulator;
                         reg_dest_addr_source_o =    ADDR_FROM_CTRL_UNIT;
                         alu_input_2_select_o =      FROM_ACCUMULATOR;
-                        reg_write_en_o =            REG_WRITE;
                         if (pipeline_ctrl_signal_o) begin
+                            reg_write_en_o =         REG_WRITE;
                             reg_file_data_source_o = FROM_MEMORY;
                             reg_file_addr_o =        one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
                         end

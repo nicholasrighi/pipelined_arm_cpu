@@ -6,6 +6,7 @@ module decode_block(
                         input logic                   is_valid_i,          
                         input logic                   reg_file_write_en_i,
                         input mem_read_signal         mem_read_EXE_i,
+                        input logic [ADDR_WIDTH-1:0]  mem_reg_dest_addr_i,
                         input logic [ADDR_WIDTH-1:0]  reg_dest_addr_i,
                         input instruction             instruction_i,
                         input flush_pipeline_sig      flush_pipeline_i,
@@ -109,7 +110,7 @@ module decode_block(
 
             hazard_detector haz_detect(
                                        .mem_read_EXE_i(mem_read_EXE_i),
-                                       .dest_addr_reg_EXE_i(final_reg_dest_addr_internal),
+                                       .dest_addr_reg_EXE_i(mem_reg_dest_addr_i),
                                        .source_reg_1_DECODE_i(reg_addr_1_from_addr_decoder),
                                        .source_reg_2_DECODE_i(final_reg_2_addr_internal),
                                        
