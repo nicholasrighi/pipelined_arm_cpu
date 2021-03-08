@@ -15,6 +15,7 @@ module decode_execution_register
                                     input reg_2_reg_3_select_sig      reg_2_reg_3_select_sig_i,
                                     input flush_pipeline_sig          flush_pipeline_i,
                                     input logic                       is_valid_i,
+                                    input logic                       hazard_detector_invaidate_i,
                                     input instruction                 instruction_i,
                                     input logic [ADDR_WIDTH-1:0]      reg_1_source_addr_i,
                                     input logic [ADDR_WIDTH-1:0]      reg_2_source_addr_i,
@@ -49,7 +50,7 @@ module decode_execution_register
     always_ff @(posedge clk_i) begin
        if (reset_i) 
             is_valid_o            <= 1'b0;
-       else if (flush_pipeline_i == FLUSH_PIPELINE)
+       else if (flush_pipeline_i == FLUSH_PIPELINE || hazard_detector_invaidate_i)
             is_valid_o            <= 1'b0;
        else
             is_valid_o            <= is_valid_i;

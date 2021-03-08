@@ -130,7 +130,7 @@ module cpu_controller(
 
     // signals to deal with pushing registers onto the stack
     logic [4:0] new_sp_offset;
-
+    // TODO. Check if we overwrite all flags, or just some of them
     // TODO. Check all instructions that only set flags (there's test, cmp, etc, i forget them all at this moment)
     always_comb begin
 
@@ -272,8 +272,8 @@ module cpu_controller(
                 alu_input_2_select_o = FROM_IMM;
             end
             LOAD_STORE_REG: begin
+                reg_file_data_source_o = FROM_MEMORY;
                 if (instruction_i[11] || (instruction_i[10:9] == 2'b11)) begin 
-                    reg_file_data_source_o = FROM_MEMORY;
                     mem_read_en_o =          MEM_READ;
                     reg_write_en_o =         REG_WRITE;
                 end

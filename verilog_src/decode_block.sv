@@ -79,6 +79,7 @@ module decode_block(
             //    SIGNALS FROM HAZARD DETECTOR  //
             //////////////////////////////////////
             stall_pipeline_sig stall_pipeline_hazard_internal;
+            logic              hazard_detector_invaidate_internal;
 
             //////////////////////////////////////
             //    INTERNAL ONLY LOGIC SIGNALS   //
@@ -114,7 +115,8 @@ module decode_block(
                                        .source_reg_1_DECODE_i(reg_addr_1_from_addr_decoder),
                                        .source_reg_2_DECODE_i(final_reg_2_addr_internal),
                                        
-                                       .stall_pipeline_o(stall_pipeline_hazard_internal)
+                                       .stall_pipeline_o(stall_pipeline_hazard_internal),
+                                       .hazard_detector_invaidate_o(hazard_detector_invaidate_internal)
                                        );
 
             cpu_controller control_module(
@@ -182,6 +184,7 @@ module decode_block(
                                         .alu_input_2_select_i(alu_input_2_select_internal),
                                         .alu_control_signal_i(alu_control_signal_internal),
                                         .update_flag_i(update_flag_internal),
+                                        .hazard_detector_invaidate_i(hazard_detector_invaidate_internal),
                                         .is_valid_i(is_valid_i),
                                         .flush_pipeline_i(flush_pipeline_i),
                                         .instruction_i(instruction_i),

@@ -6,7 +6,8 @@ module hazard_detector(
                         input logic [ADDR_WIDTH-1:0] source_reg_1_DECODE_i,
                         input logic [ADDR_WIDTH-1:0] source_reg_2_DECODE_i,
     
-                        output stall_pipeline_sig stall_pipeline_o
+                        output stall_pipeline_sig stall_pipeline_o,
+                        output logic              hazard_detector_invaidate_o
                         );
 
     always_comb begin
@@ -19,6 +20,8 @@ module hazard_detector(
             stall_pipeline_o = STALL_PIPELINE;
         else
             stall_pipeline_o = NO_STALL_PIPELINE;
+        
+        hazard_detector_invaidate_o = stall_pipeline_o;
     end
 
 endmodule
