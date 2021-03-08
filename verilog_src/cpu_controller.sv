@@ -1,6 +1,6 @@
 `include "GENERAL_DEFS.svh"
 
-function logic [HALF_WORD-1:0] bit_reverse(
+function automatic [HALF_WORD-1:0] bit_reverse(
                                             input logic [HALF_WORD-1:0] data_i
                                           );
         logic [HALF_WORD-1:0] reversed_half_word;
@@ -13,7 +13,7 @@ function logic [HALF_WORD-1:0] bit_reverse(
         return reversed_half_word;
 endfunction
 
-function logic [ADDR_WIDTH-1:0] one_hot_to_bin(
+function automatic [ADDR_WIDTH-1:0] one_hot_to_bin(
                                                 input logic [HALF_WORD-1:0] one_hot_i                  
                                               );
         logic [ADDR_WIDTH-1:0] reg_addr = '0;
@@ -24,7 +24,7 @@ function logic [ADDR_WIDTH-1:0] one_hot_to_bin(
         return reg_addr;
 endfunction
 
-function logic [HALF_WORD-1:0] reverse_priority_decode(
+function automatic [HALF_WORD-1:0] reverse_priority_decode(
                                                         input logic [BYTE-1:0] data_i
 
                                                   );
@@ -45,7 +45,7 @@ function logic [HALF_WORD-1:0] reverse_priority_decode(
 
 endfunction
 
-function logic [15:0] priority_decode(
+function automatic [15:0] priority_decode(
                                             input logic [15:0] reg_list
                                         );
         logic [15:0] decoder_signal;
@@ -74,7 +74,7 @@ function logic [15:0] priority_decode(
         return decoder_signal;
 endfunction
 
-function logic [4:0] bit_count(
+function automatic [4:0] bit_count(
                                 input logic [HALF_WORD-1:0] data_in
                                 );
     logic [4:0] sum = '0;
