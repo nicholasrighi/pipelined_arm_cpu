@@ -131,6 +131,7 @@ module cpu_controller(
     // signals to deal with pushing registers onto the stack
     logic [4:0] new_sp_offset;
 
+    // TODO. Check all instructions that only set flags (there's test, cmp, etc, i forget them all at this moment)
     always_comb begin
 
         // extract signals from instruction
@@ -209,8 +210,8 @@ module cpu_controller(
                     LEFT_SHIFT_L:   alu_control_signal_o = ALU_LEFT_SHIFT_L;
                     RIGHT_SHIFT_L:  alu_control_signal_o = ALU_RIGHT_SHIFT_L;
                     RIGHT_SHIFT_A:  alu_control_signal_o = ALU_RIGHT_SHIFT_A;
-                    ADD_W_CARRY:    alu_control_signal_o = ALU_ADD;
-                    SUB_W_CARRY:    alu_control_signal_o = ALU_SUB;
+                    ADD_W_CARRY:    alu_control_signal_o = ALU_ADD_W_CARRY;
+                    SUB_W_CARRY:    alu_control_signal_o = ALU_SUB_W_CARRY;
                     ROTATE_R:       alu_control_signal_o = ALU_ROTATE_R;
                     SET_AND_FLAG:   begin
                                     alu_control_signal_o = ALU_AND;

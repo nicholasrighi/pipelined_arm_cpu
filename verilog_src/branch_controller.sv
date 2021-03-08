@@ -46,11 +46,11 @@ module branch_controller(
                     VS: take_branch_internal = (status_reg_i.overflow_flag == 1'b1);
                     VC: take_branch_internal = (status_reg_i.overflow_flag == 1'b0);
                     HI: take_branch_internal = (status_reg_i.carry_flag == 1'b1 & status_reg_i.zero_flag == 1'b0);
-                    LS: take_branch_internal = (status_reg_i.carry_flag == 1'b0 & status_reg_i.zero_flag == 1'b1);
+                    LS: take_branch_internal = (status_reg_i.carry_flag == 1'b0 | status_reg_i.zero_flag == 1'b1);
                     GE: take_branch_internal = (status_reg_i.negative_flag == status_reg_i.overflow_flag);
                     LT: take_branch_internal = (status_reg_i.negative_flag != status_reg_i.overflow_flag);
-                    GT: take_branch_internal = (status_reg_i.zero_flag & (status_reg_i.negative_flag == status_reg_i.overflow_flag));
-                    LE: take_branch_internal = (status_reg_i.zero_flag == 1 || (status_reg_i.negative_flag != status_reg_i.overflow_flag));
+                    GT: take_branch_internal = (status_reg_i.zero_flag == 1'b0 & (status_reg_i.negative_flag == status_reg_i.overflow_flag));
+                    LE: take_branch_internal = (status_reg_i.zero_flag == 1'b1 || (status_reg_i.negative_flag != status_reg_i.overflow_flag));
                     AL: take_branch_internal = TAKE_BRANCH;
                 default: ;
                 endcase

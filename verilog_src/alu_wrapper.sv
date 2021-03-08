@@ -49,6 +49,7 @@ module alu_wrapper(
         end
 
         alu full_alu(
+                        .carry_flag_i(status_reg_o.carry_flag),
                         .alu_ctrl_sig_i(alu_ctrl_sig_i),
                         .data_in_1_i(alu_data_in_1_internal),
                         .data_in_2_i(alu_data_in_2_internal),
