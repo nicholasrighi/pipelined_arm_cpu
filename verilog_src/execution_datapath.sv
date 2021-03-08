@@ -101,6 +101,7 @@ module execution_datapath(
         alu_wrapper wrapped_alu (
                                     .clk_i(clk_i),
                                     .reset_i(reset_i),
+                                    .is_valid_i(is_valid_i),
                                     .update_flag_i(update_flag_i & is_valid_i),
                                     .alu_ctrl_sig_i(alu_ctrl_sig_i),
                                     .alu_input_1_select_i(alu_input_1_select_i),
