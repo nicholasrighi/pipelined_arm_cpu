@@ -11,13 +11,14 @@ module branch_controller(
                             input logic [WORD-1:0]      program_counter_i,
                             input logic [WORD-1:0]      reg_data_1_i,
                             // verilator lint_off UNUSED
+                            // TODO: remove reg_data_1 from branch controller, not needed
                             input logic [WORD-1:0]      reg_data_2_i,
                             // verilator lint_on UNUSED
                             input logic [WORD-1:0]      immediate_i,
 
                             output take_branch_ctrl_sig take_branch_o,
                             output flush_pipeline_sig   flush_pipeline_o,
-                            output [WORD-1:0]           program_counter_o
+                            output logic [WORD-1:0]     program_counter_o
                         );
 
     branch_link_status next_branch_link;
@@ -98,6 +99,7 @@ module branch_controller(
         default:;
         endcase 
 
+        // need to AND is_valid signal with take branch and pipeline signal to prevent an invalid instruction from branching
         take_branch_o = is_valid_i & take_branch_internal;
         flush_pipeline_o = is_valid_i & take_branch_internal;
     end

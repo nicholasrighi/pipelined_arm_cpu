@@ -3,6 +3,7 @@
 module alu_wrapper(
                             input logic                 clk_i,
                             input logic                 reset_i,
+                            input logic                 is_valid_i,
                             input logic                 update_flag_i,
                             input alu_control_signal    alu_ctrl_sig_i,
                             input alu_input_source      alu_input_1_select_i,
@@ -61,7 +62,7 @@ module alu_wrapper(
         always_ff @(posedge clk_i) begin 
                 if (reset_i)
                         status_reg_o <= 4'b0;
-                else if (update_flag_i)
+                else if (update_flag_i & is_valid_i)
                         status_reg_o <= next_status_reg;
         end
 
