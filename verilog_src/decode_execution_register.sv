@@ -77,6 +77,6 @@ module decode_execution_register
       program_counter_o           <= program_counter_i;
     end
 
-    assign mem_read_en_o = mem_read_en_internal & is_valid_o;
+    assign mem_read_en_o = mem_read_signal'(mem_read_en_internal & is_valid_o);
 
 endmodule

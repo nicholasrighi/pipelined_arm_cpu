@@ -23,7 +23,7 @@ module imm_gen(
     always_comb begin
 
         // extract fields from current instruction
-        op =                instruction_i[15:10];
+        op =                opcode'(instruction_i[15:10]);
         current_immediate = instruction_i[10:0];
         J_1 =               instruction_i[13];
         J_2 =               instruction_i[11];

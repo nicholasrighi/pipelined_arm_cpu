@@ -345,7 +345,7 @@ module cpu_controller(
                         reg_file_addr_2_source_o =  ADDR_FROM_CTRL_UNIT;
                         alu_input_2_select_o =      FROM_ACCUMULATOR;
                         // as long as we're stalling we're writing registers to memory
-                        mem_write_en_o =            (pipeline_ctrl_signal_o == STALL_PIPELINE);
+                        mem_write_en_o =            mem_write_signal'(pipeline_ctrl_signal_o == STALL_PIPELINE);
 
                         if (pipeline_ctrl_signal_o) begin
                             reg_write_en_o =        NO_REG_WRITE;
