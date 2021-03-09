@@ -25,12 +25,12 @@ module program_counter(
 
        is_valid_o = 1'b1;
 
-       if (stall_pipeline_i == STALL_PIPELINE) 
-            next_program_counter_value = program_counter_o;
+       if (take_branch_i == TAKE_BRANCH)
+            next_program_counter_value = branch_pc_value_i;
        else if (branch_from_wb_i == BRANCH_FROM_WB)
             next_program_counter_value = pop_pc_value_i;
-       else if (take_branch_i == TAKE_BRANCH)
-            next_program_counter_value = branch_pc_value_i;
+       else if (stall_pipeline_i == STALL_PIPELINE) 
+            next_program_counter_value = program_counter_o;
        else
             next_program_counter_value = program_counter_o + INCREMENT_VALUE;
     end

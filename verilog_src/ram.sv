@@ -8,7 +8,9 @@ module ram(
     output logic    [7:0]   Q
     );
 
-reg [7:0] mem [8191:0];
+localparam DATA_SIZE = 512;
+
+reg [7:0] mem [DATA_SIZE-1:0];
 
 always @(posedge CLK) begin
     if (WEN)

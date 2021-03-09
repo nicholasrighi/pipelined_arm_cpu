@@ -130,6 +130,7 @@ module decode_block(
             cpu_controller control_module(
                                         .clk_i(clk_i),
                                         .reset_i(reset_i),
+                                        .is_valid_i(is_valid_i),
                                         .instruction_i(instruction_i),
 
                                         .mem_write_en_o(mem_write_en_internal),
