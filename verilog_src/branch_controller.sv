@@ -100,8 +100,8 @@ module branch_controller(
         endcase 
 
         // need to AND is_valid signal with take branch and pipeline signal to prevent an invalid instruction from branching
-        take_branch_o = is_valid_i & take_branch_internal;
-        flush_pipeline_o = is_valid_i & take_branch_internal;
+        take_branch_o = take_branch_ctrl_sig'(is_valid_i & take_branch_internal);
+        flush_pipeline_o = flush_pipeline_sig'(is_valid_i & take_branch_internal);
     end
 
     always_ff @(posedge clk_i) begin
