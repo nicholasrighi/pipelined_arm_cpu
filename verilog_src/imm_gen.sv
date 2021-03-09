@@ -74,7 +74,7 @@ module imm_gen(
                 // we need to subtract 2 from the PC value since the 2 word instruction starts 2 bytes before the current pc value. The 
                 // current half value is halfway inside the current instruction, when in reality it should be at the beginning of the entire
                 // instruction
-                immediate_value_o = 32'(signed'({S, ~(J_1 ^ S), ~(J_2 ^ S), stored_immediate, current_immediate, 1'0})) - HALFWORD_OFFSET;
+                immediate_value_o = 32'(signed'({S, ~(J_1 ^ S), ~(J_2 ^ S), stored_immediate, current_immediate, 1'b0})) - HALFWORD_OFFSET;
             default: immediate_value_o = 32'bx;
         endcase
     end

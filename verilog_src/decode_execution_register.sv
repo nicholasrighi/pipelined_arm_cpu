@@ -14,6 +14,7 @@ module decode_execution_register
                                     input update_flag_sig             update_flag_i,
                                     input reg_2_reg_3_select_sig      reg_2_reg_3_select_sig_i,
                                     input flush_pipeline_sig          flush_pipeline_i,
+                                    input branch_from_wb              branch_from_wb_i,
                                     input logic                       is_valid_i,
                                     input logic                       hazard_detector_invaidate_i,
                                     input instruction                 instruction_i,
@@ -34,6 +35,7 @@ module decode_execution_register
                                     output alu_control_signal         alu_control_signal_o,
                                     output update_flag_sig            update_flag_o,
                                     output reg_2_reg_3_select_sig     reg_2_reg_3_select_sig_o,
+                                    output branch_from_wb             branch_from_wb_o,
                                     output logic                      is_valid_o,
                                     output instruction                instruction_o,
                                     output logic [ADDR_WIDTH-1:0]     reg_1_source_addr_o,
@@ -55,6 +57,7 @@ module decode_execution_register
        else
             is_valid_o            <= is_valid_i;
 
+      branch_from_wb_o            <= branch_from_wb_i;
       instruction_o               <= instruction_i;
       mem_write_en_o              <= mem_write_en_i;
       mem_read_en_internal        <= mem_read_en_i;

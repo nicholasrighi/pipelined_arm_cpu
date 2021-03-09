@@ -135,6 +135,8 @@
 	typedef enum logic [1:0] {FORWARD_FROM_DECODE, 
 							FORWARD_FROM_MEM, FORWARD_FROM_WB}			forwarding_data_source;
 
+	typedef enum logic {NO_BRANCH_FROM_WB = 0, BRANCH_FROM_WB}			branch_from_wb;
+
 	typedef enum logic [4:0]{ALU_LEFT_SHIFT_L, ALU_RIGHT_SHIFT_L, 
 		ALU_RIGHT_SHIFT_A, ALU_ADD, ALU_SUB, ALU_AND, ALU_OR, ALU_XOR,
 		ALU_ROTATE_R, ALU_MULT, ALU_NOT, ALU_BIT_CLEAR, 

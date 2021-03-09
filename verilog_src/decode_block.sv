@@ -25,6 +25,7 @@ module decode_block(
                         output reg_2_reg_3_select_sig reg_2_reg_3_select_sig_o,
                         output logic                  is_valid_o,
                         output instruction            instruction_o,
+                        output branch_from_wb         branch_from_wb_o,
                         output logic [ADDR_WIDTH-1:0] reg_1_source_addr_o,
                         output logic [ADDR_WIDTH-1:0] reg_2_source_addr_o,
                         output logic [ADDR_WIDTH-1:0] reg_3_source_addr_o,
@@ -42,7 +43,9 @@ module decode_block(
             //////////////////////////////////////
             mem_write_signal        mem_write_en_internal;
             mem_read_signal         mem_read_en_internal;
+            // verilator lint_off UNUSED
             is_valid_sig            is_valid_from_controller_internal;
+            // verilator lint_on UNUSED
             reg_file_write_sig      reg_file_write_en_internal;
             reg_file_data_source    reg_file_data_source_internal;   
             alu_input_source        alu_input_1_select_internal;
@@ -50,6 +53,7 @@ module decode_block(
             alu_control_signal      alu_control_signal_internal;
             update_flag_sig         update_flag_internal;
             stall_pipeline_sig      stall_pipeline_controller_internal;
+            branch_from_wb          branch_from_wb_internal;
             reg_addr_data_source    reg_file_addr_2_source_internal;
             reg_addr_data_source    reg_dest_addr_source_internal;
             reg_2_reg_3_select_sig  select_reg_2_reg_3_sig_internal;
@@ -84,8 +88,9 @@ module decode_block(
             //////////////////////////////////////
             //    INTERNAL ONLY LOGIC SIGNALS   //
             //////////////////////////////////////
+            branch_from_wb    branch_from_wb_to_reg;
             // verilator lint_off UNUSED
-            is_valid_sig   final_is_valid_internal;
+            //is_valid_sig   final_is_valid_internal;
             // verilator lint_on UNUSED
 
             always_comb begin
@@ -94,9 +99,12 @@ module decode_block(
                // stall_pipeline signals aren't relevant. We always need to AND the is_valid_i signal with any control logic that 
                // is used 
                // TODO: This flag is for detecting invalid instructions. Not sure if we need to do this, but could be useful later
-               final_is_valid_internal = is_valid_i & is_valid_from_controller_internal & stall_pipeline_hazard_internal;
+               //final_is_valid_internal = is_valid_i & is_valid_from_controller_internal & stall_pipeline_hazard_internal;
 
-               pipeline_ctrl_sig_o = (is_valid_o & (stall_pipeline_hazard_internal | stall_pipeline_controller_internal));
+               // If we decide that we're branching during the WB stage, then we need to flush the instructions currently in the 
+               // fetch stage
+               branch_from_wb_to_reg =  is_valid_i & branch_from_wb_internal;
+               pipeline_ctrl_sig_o = (is_valid_i & (stall_pipeline_hazard_internal | stall_pipeline_controller_internal));
 
                if (reg_file_addr_2_source_internal == ADDR_FROM_INSTRUCTION)
                   final_reg_2_addr_internal = reg_addr_2_from_addr_decoder;
@@ -134,6 +142,7 @@ module decode_block(
                                         .alu_control_signal_o(alu_control_signal_internal),
                                         .update_flag_o(update_flag_internal),
                                         .pipeline_ctrl_signal_o(stall_pipeline_controller_internal),
+                                        .branch_from_wb_o(branch_from_wb_internal),
                                         .accumulator_imm_o(accumulator_imm_internal),
                                         .reg_file_addr_o(reg_file_addr_o),
                                         .reg_file_addr_2_source_o(reg_file_addr_2_source_internal),
@@ -186,6 +195,7 @@ module decode_block(
                                         .update_flag_i(update_flag_internal),
                                         .hazard_detector_invaidate_i(hazard_detector_invaidate_internal),
                                         .is_valid_i(is_valid_i),
+                                        .branch_from_wb_i(branch_from_wb_to_reg),
                                         .flush_pipeline_i(flush_pipeline_i),
                                         .instruction_i(instruction_i),
                                         .accumulator_imm_i(accumulator_imm_internal),
@@ -207,6 +217,7 @@ module decode_block(
                                         .update_flag_o(update_flag_o),
                                         .instruction_o(instruction_o),
                                         .is_valid_o(is_valid_o),
+                                        .branch_from_wb_o(branch_from_wb_o),
                                         .accumulator_imm_o(accumulator_imm_o),
                                         .immediate_o(immediate_o),
                                         .reg_1_source_addr_o(reg_1_source_addr_o),

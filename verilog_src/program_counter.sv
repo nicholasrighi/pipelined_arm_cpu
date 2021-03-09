@@ -3,8 +3,10 @@
 module program_counter(
                         input logic                 clk_i,
                         input logic                 reset_i,
+                        input branch_from_wb        branch_from_wb_i,
                         input stall_pipeline_sig    stall_pipeline_i,
                         input take_branch_ctrl_sig  take_branch_i,
+                        input logic [WORD-1:0]      pop_pc_value_i,
                         input logic [WORD-1:0]      branch_pc_value_i,
 
                         output logic                is_valid_o,
@@ -25,6 +27,8 @@ module program_counter(
 
        if (stall_pipeline_i == STALL_PIPELINE) 
             next_program_counter_value = program_counter_o;
+       else if (branch_from_wb_i == BRANCH_FROM_WB)
+            next_program_counter_value = pop_pc_value_i;
        else if (take_branch_i == TAKE_BRANCH)
             next_program_counter_value = branch_pc_value_i;
        else

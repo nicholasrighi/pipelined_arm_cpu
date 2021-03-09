@@ -5,6 +5,7 @@ module memory_block(
                     input logic                     reset_i,
                     input logic                     is_valid_i,
                     input logic                     mem_write_en_i,
+                    input branch_from_wb            branch_from_wb_i,
                     input reg_file_data_source      reg_data_ctrl_sig_i,
                     input reg_file_write_sig        reg_file_write_en_i,
                     input logic [6:0]               opA_opB_i,
@@ -15,6 +16,7 @@ module memory_block(
                     output logic                    is_valid_o,
                     output reg_file_data_source     reg_data_ctrl_sig_o,
                     output reg_file_write_sig       reg_file_write_en_o,
+                    output branch_from_wb           branch_from_wb_o,
                     output logic [ADDR_WIDTH-1:0]   reg_dest_addr_o,
                     output logic [WORD-1:0]         mem_data_o,
                     output logic [WORD-1:0]         alu_data_o
@@ -37,6 +39,7 @@ module memory_block(
         else   
             is_valid_o <= is_valid_i;
 
+        branch_from_wb_o    <= branch_from_wb_i;
         reg_data_ctrl_sig_o <= reg_data_ctrl_sig_i;
         reg_dest_addr_o     <= reg_dest_addr_i;
         alu_data_o          <= alu_data_i;

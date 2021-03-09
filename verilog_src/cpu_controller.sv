@@ -103,6 +103,7 @@ module cpu_controller(
                         output reg_addr_data_source     reg_file_addr_2_source_o,
                         output reg_addr_data_source     reg_dest_addr_source_o,
                         output reg_2_reg_3_select_sig   reg_2_reg_3_select_sig_o,
+                        output branch_from_wb           branch_from_wb_o,
                         output logic [WORD-1:0]         accumulator_imm_o,
                         output logic [ADDR_WIDTH-1:0]   reg_file_addr_o
                         );
@@ -113,6 +114,10 @@ module cpu_controller(
 
     localparam BASE_REG_NOT_IN_LIST = 1'b0;
     localparam BASE_REG_IN_LIST = 1'b1;
+
+    // signals to deal with poping the pc from the stack
+    logic [1:0] next_pop_stall_counter;
+    logic [1:0] pop_stall_counter;
 
     // signals to deal with branch and link
     branch_link_status stored_branch_link;
@@ -158,6 +163,8 @@ module cpu_controller(
         new_sp_offset =             'x;
         reg_2_reg_3_select_sig_o =  SELECT_REG_2;
         reverse_order_hold_counter = NO_REV_LOAD_COUNTER;
+        branch_from_wb_o =          NO_BRANCH_FROM_WB;
+        next_pop_stall_counter =    2'b0;
 
        casez(instruction_i.op)
             SHIFT_IMM: begin
@@ -196,14 +203,16 @@ module cpu_controller(
                     CMP_8_IMM: begin
                                 alu_input_2_select_o = FROM_IMM;
                                 alu_control_signal_o = ALU_SUB;
-                                reg_write_en_o = NO_REG_WRITE;
+                                reg_write_en_o =       NO_REG_WRITE;
                     end       
                     default: ;
                 endcase
             end
             DATA_PROCESSING: begin
+
                 update_flag_o = UPDATE_FLAG;
                 reg_write_en_o = REG_WRITE;
+
                 casez(data_processing_code_internal)
                     AND:            alu_control_signal_o = ALU_AND;
                     XOR:            alu_control_signal_o = ALU_XOR;
@@ -324,6 +333,7 @@ module cpu_controller(
                     BYTE_REV_P_HW:      alu_control_signal_o = ALU_BYTE_REV_P_HW;
                     BYTE_REV_S_HW:      alu_control_signal_o = ALU_BYTE_REV_S_HW;
                     PUSH_MUL_REG: begin
+
                         alu_control_signal_o =      ALU_SUB;
                         reg_list_from_instruction = 16'({instruction_i[8],6'b0,instruction_i[7:0]});
                         new_sp_offset =             4*bit_count(reg_list_from_instruction);
@@ -332,6 +342,7 @@ module cpu_controller(
                         reg_file_addr_2_source_o =  ADDR_FROM_CTRL_UNIT;
                         alu_input_2_select_o =      FROM_ACCUMULATOR;
                         mem_write_en_o =            pipeline_ctrl_signal_o;
+
                         if (pipeline_ctrl_signal_o) begin
                             reg_write_en_o =        NO_REG_WRITE;
                             reg_file_addr_o =       one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
@@ -342,24 +353,44 @@ module cpu_controller(
                             accumulator_imm_o =     32'(new_sp_offset);
                         end
                     end
-                    // TODO: implement branching on POP registers if PC is one of the popped registers
                     // See the note on LOAD_MULTIPLE_REG for an explination of why read_mem isn't asserted 
                     // for this instruction
                     POP_MUL_REG: begin
-                        reg_list_from_instruction = {instruction_i[8],7'b0,instruction_i[7:0]};
-                        // once the pipeline_ctrl signal goes low, we know that we've 
-                        pipeline_ctrl_signal_o =    (bit_count(reg_list_from_instruction & hold_counter) != 5'b0);
+
+                        reg_list_from_instruction = {8'b0,instruction_i[7:0]};
                         accumulator_imm_o =         4*accumulator;
-                        reg_dest_addr_source_o =    ADDR_FROM_CTRL_UNIT;
                         alu_input_2_select_o =      FROM_ACCUMULATOR;
-                        if (pipeline_ctrl_signal_o) begin
+
+                        // process all registers except PC
+                        if (bit_count(reg_list_from_instruction & hold_counter) != 5'b0) begin
+                            reg_dest_addr_source_o = ADDR_FROM_CTRL_UNIT;
+                            pipeline_ctrl_signal_o = STALL_PIPELINE;
                             reg_write_en_o =         REG_WRITE;
                             reg_file_data_source_o = FROM_MEMORY;
                             reg_file_addr_o =        one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
                         end
                         else begin
-                            reg_file_data_source_o = FROM_ALU;
-                            reg_file_addr_o =        SP_REG_NUM; 
+                            pipeline_ctrl_signal_o = pop_stall_counter < 2'd2;
+                            case(pop_stall_counter) 
+                                // check if we're loading the PC; if so, we need to branch to the new PC value.
+                                2'd0: begin
+                                    reg_write_en_o =        NO_REG_WRITE;
+                                    branch_from_wb_o =      instruction_i[8];
+                                    next_pop_stall_counter = 2'd1;
+                                end
+                                // now we need to update the SP. We need to increment the SP by 4*bit_count of 
+                                // reg list, incremented by 1 if we're popping the PC off the stack. We now write this back 
+                                // to the reg file, so we need write_en to be on
+                                2'd1: begin
+                                    mem_write_en_o =            REG_WRITE;
+                                    accumulator_imm_o =         4*bit_count(HALF_WORD'(instruction_i[8:0]));
+                                    next_pop_stall_counter =    2'd2;
+                                end                                 
+                                default: begin
+                                    reg_write_en_o =        NO_REG_WRITE;
+                                    next_pop_stall_counter = 2'b0;
+                                end
+                            endcase
                         end
                     end
                     default: ;
@@ -426,6 +457,13 @@ module cpu_controller(
             end
             default: is_valid_o = NO_IS_VALID;
        endcase 
+    end
+
+    always_ff @(posedge clk_i) begin
+        if (reset_i)
+            pop_stall_counter <= 2'b0;
+        else
+            pop_stall_counter <= next_pop_stall_counter;
     end
 
     always_ff @(posedge clk_i) begin
