@@ -1,8 +1,8 @@
 `include "GENERAL_DEFS.svh"
 
 module arm_cpu(
-                input logic                 clk_i,
-                input logic                 reset_i,
+                input logic                 Clock,
+                input logic                 Reset,
                 input logic                 program_mem_write_en_i, 
                 input logic [HALF_WORD-1:0] instruction_i,
                 input logic [WORD-1:0]      instruction_addr_i,
@@ -109,8 +109,8 @@ module arm_cpu(
     end
 
     program_counter pc_module(
-                                .clk_i(clk_i),
-                                .reset_i(reset_i),
+                                .clk_i(Clock),
+                                .reset_i(Reset),
                                 .branch_from_wb_i(branch_from_wb_WB_TO_PC),
                                 .pop_pc_value_i(program_counter_WB_TO_PC),
                                 .take_branch_i(take_branch_EXE_TO_PC),
@@ -122,8 +122,8 @@ module arm_cpu(
                             );
 
     instruction_mem instruction_unit(
-                                .clk_i(clk_i),
-                                .reset_i(reset_i),
+                                .clk_i(Clock),
+                                .reset_i(Reset),
                                 .flush_pipeline_i(final_flush_signal),
                                 .program_mem_write_en_i(program_mem_write_en_i),
                                 .is_valid_i(is_valid_PC_TO_FETCH),
@@ -137,8 +137,8 @@ module arm_cpu(
                             );
 
     decode_block    d_block(
-                        .clk_i(clk_i),
-                        .reset_i(reset_i),
+                        .clk_i(Clock),
+                        .reset_i(Reset),
                         .is_valid_i(is_valid_FETCH_TO_DECODE),
                         .flush_pipeline_i(final_flush_signal),
                         // the mem_read signal that leaves the decode block is the 
@@ -178,8 +178,8 @@ module arm_cpu(
                         );
 
     execution_block exe_block(
-                         .clk_i(clk_i),
-                         .reset_i(reset_i),
+                         .clk_i(Clock),
+                         .reset_i(Reset),
                          .update_flag_i(update_flag_DECODE_TO_EXE),
                          .mem_write_en_i(mem_write_en_DECODE_TO_EXE),
                          .reg_file_write_en_i(reg_file_write_en_DECODE_TO_EXE),
@@ -223,8 +223,8 @@ module arm_cpu(
                         );
         
     memory_block mem_block(
-                        .clk_i(clk_i),
-                        .reset_i(reset_i),
+                        .clk_i(Clock),
+                        .reset_i(Reset),
                         .is_valid_i(is_valid_EXE_TO_MEM),
                         .mem_write_en_i(mem_write_en_EXE_TO_MEM),
                         .branch_from_wb_i(branch_from_wb_EXE_TO_MEM),
