@@ -9,7 +9,7 @@ module instruction_ram(
                         output logic [HALF_WORD-1:0] instruction_o
                       );
 
-    localparam NUM_INSTRUCTIONS = 4096;
+    localparam NUM_INSTRUCTIONS = 512;
 
     logic [HALF_WORD-1:0] ram_mod [NUM_INSTRUCTIONS];
 
