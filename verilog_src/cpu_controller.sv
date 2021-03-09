@@ -86,8 +86,9 @@ function automatic [4:0] bit_count(
 endfunction
 
 module cpu_controller(
-                        input                           clk_i,
-                        input                           reset_i,
+                        input logic                     clk_i,
+                        input logic                     reset_i,
+                        input logic                     is_valid_i,
                         input instruction               instruction_i,
 
                         output update_flag_sig          update_flag_o,
@@ -314,8 +315,10 @@ module cpu_controller(
                 alu_input_2_select_o = FROM_IMM;
             end
             MIS_16_BIT: begin
-                update_flag_o = NO_UPDATE_FLAG;
+
+                update_flag_o =  NO_UPDATE_FLAG;
                 reg_write_en_o = REG_WRITE;
+
                 casez(instruction_i[11:5])
                     ADD_IMM_SP: begin        
                         alu_control_signal_o = ALU_ADD; 
@@ -341,7 +344,8 @@ module cpu_controller(
                         accumulator_imm_o =         32'(new_sp_offset)- 4*accumulator;
                         reg_file_addr_2_source_o =  ADDR_FROM_CTRL_UNIT;
                         alu_input_2_select_o =      FROM_ACCUMULATOR;
-                        mem_write_en_o =            pipeline_ctrl_signal_o;
+                        // as long as we're stalling we're writing registers to memory
+                        mem_write_en_o =            (pipeline_ctrl_signal_o == STALL_PIPELINE);
 
                         if (pipeline_ctrl_signal_o) begin
                             reg_write_en_o =        NO_REG_WRITE;
@@ -382,7 +386,7 @@ module cpu_controller(
                                 // reg list, incremented by 1 if we're popping the PC off the stack. We now write this back 
                                 // to the reg file, so we need write_en to be on
                                 2'd1: begin
-                                    mem_write_en_o =            REG_WRITE;
+                                    reg_write_en_o =            REG_WRITE;
                                     accumulator_imm_o =         4*bit_count(HALF_WORD'(instruction_i[8:0]));
                                     next_pop_stall_counter =    2'd2;
                                 end                                 
@@ -475,7 +479,7 @@ module cpu_controller(
 
     // logic for updating accumulator
     always_ff @(posedge clk_i)begin
-        if (reset_i || ~pipeline_ctrl_signal_o) 
+        if (reset_i | (pipeline_ctrl_signal_o == NO_FLUSH_PIPELINE) | ~is_valid_i) 
             accumulator <= 5'b0;
         else
             accumulator <= accumulator + 1'b1;
@@ -483,7 +487,7 @@ module cpu_controller(
 
     // logic for updating hold counter
     always_ff @(posedge clk_i) begin
-        if (reset_i | ~pipeline_ctrl_signal_o)
+        if (reset_i | (pipeline_ctrl_signal_o == NO_FLUSH_PIPELINE) | ~is_valid_i)
             hold_counter <= FULL_REG_LIST;
         else if (reverse_order_hold_counter == NO_REV_LOAD_COUNTER)
             // AND'ing the reg list and hold counter ensures that the bit corresponding to the lowest 
@@ -495,7 +499,7 @@ module cpu_controller(
 
     // logic for updating mult_load_store_base_reg status signal
     always_ff @(posedge clk_i) begin
-        if (reset_i | ~pipeline_ctrl_signal_o) 
+        if (reset_i | (pipeline_ctrl_signal_o == NO_FLUSH_PIPELINE) | ~is_valid_i) 
             base_reg_in_list_status_sig <= BASE_REG_NOT_IN_LIST;
         else if (base_reg_in_list_status_sig == BASE_REG_NOT_IN_LIST) begin
             if (one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter)) == 4'(instruction_i[10:8]))

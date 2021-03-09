@@ -178,6 +178,7 @@ module data_mem(
 
         // Data writing logic
         if (mem_write_en) begin
+            $display("writing %x at addr = %d", mem_data_in, mem_addr);
             if (max_size == 2'd0) begin
                 mem_write_en_1 = 1'b1;
             end else if (max_size == 2'd1) begin
