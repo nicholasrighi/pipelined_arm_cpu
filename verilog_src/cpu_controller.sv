@@ -340,7 +340,7 @@ module cpu_controller(
                         alu_control_signal_o =      ALU_SUB;
                         reg_list_from_instruction = 16'({instruction_i[8],6'b0,instruction_i[7:0]});
                         new_sp_offset =             4*bit_count(reg_list_from_instruction);
-                        pipeline_ctrl_signal_o =    (bit_count(reg_list_from_instruction & hold_counter) != 5'b0);
+                        pipeline_ctrl_signal_o =    stall_pipeline_sig'(bit_count(reg_list_from_instruction & hold_counter) != 5'b0);
                         accumulator_imm_o =         32'(new_sp_offset)- 4*accumulator;
                         reg_file_addr_2_source_o =  ADDR_FROM_CTRL_UNIT;
                         alu_input_2_select_o =      FROM_ACCUMULATOR;
