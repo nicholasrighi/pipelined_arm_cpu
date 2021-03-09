@@ -5,7 +5,9 @@ module arm_cpu(
                 input logic                 reset_i,
                 input logic                 program_mem_write_en_i, 
                 input logic [HALF_WORD-1:0] instruction_i,
-                input logic [WORD-1:0]      instruction_addr_i
+                input logic [WORD-1:0]      instruction_addr_i,
+
+                output logic [WORD-1:0]     data_o
                 );
 
     //////////////////////////////////////
@@ -93,6 +95,8 @@ module arm_cpu(
     logic final_flush_signal;
 
     always_comb begin
+
+        data_o = mem_data_MEM_TO_WB;
 
         final_flush_signal = flush_pipeline_FROM_EXE | branch_from_wb_WB_TO_PC;
 
