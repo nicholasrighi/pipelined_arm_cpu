@@ -383,7 +383,7 @@ module cpu_controller(
                                 // check if we're loading the PC; if so, we need to branch to the new PC value.
                                 2'd0: begin
                                     reg_write_en_o =        NO_REG_WRITE;
-                                    branch_from_wb_o =      instruction_i[8];
+                                    branch_from_wb_o =      branch_from_wb'(instruction_i[8]);
                                     next_pop_stall_counter = 2'd1;
                                 end
                                 // now we need to update the SP. We need to increment the SP by 4*bit_count of 
@@ -406,11 +406,11 @@ module cpu_controller(
             end
             STORE_MULT_REG: begin
                 reg_list_from_instruction = 16'(instruction_i[7:0]);
-                pipeline_ctrl_signal_o =    (bit_count(reg_list_from_instruction & hold_counter) != 5'b0);
+                pipeline_ctrl_signal_o =    stall_pipeline_sig'(bit_count(reg_list_from_instruction & hold_counter) != 5'b0);
                 accumulator_imm_o =         4*accumulator;
                 alu_input_2_select_o =      FROM_ACCUMULATOR;
-                mem_write_en_o =            pipeline_ctrl_signal_o;
-                reg_write_en_o =            ~pipeline_ctrl_signal_o;
+                mem_write_en_o =            mem_write_signal'(pipeline_ctrl_signal_o);
+                reg_write_en_o =            reg_file_write_sig'(~pipeline_ctrl_signal_o);
                 if (pipeline_ctrl_signal_o) begin 
                     reg_file_addr_o =       one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
                     reg_file_addr_2_source_o =  ADDR_FROM_CTRL_UNIT;
@@ -431,7 +431,7 @@ module cpu_controller(
                 reverse_order_hold_counter = REV_LOAD_COUNTER;
                 reg_list_from_instruction = 16'(instruction_i[7:0]);
                 new_sp_offset =             4*(bit_count(16'(instruction_i[7:0])) - 1'b1);
-                pipeline_ctrl_signal_o =    (bit_count(reg_list_from_instruction & hold_counter) != 5'b0);
+                pipeline_ctrl_signal_o =    stall_pipeline_sig'(bit_count(reg_list_from_instruction & hold_counter) != 5'b0);
                 accumulator_imm_o =         32'(new_sp_offset)-4*accumulator;
                 reg_dest_addr_source_o =    ADDR_FROM_CTRL_UNIT;
                 alu_input_2_select_o =      FROM_ACCUMULATOR;
@@ -441,7 +441,7 @@ module cpu_controller(
                 end
                 else begin
                     reg_file_addr_o =       4'(instruction_i[10:8]);
-                    reg_write_en_o =        (base_reg_in_list_status_sig == BASE_REG_NOT_IN_LIST);
+                    reg_write_en_o =        reg_file_write_sig'(base_reg_in_list_status_sig == BASE_REG_NOT_IN_LIST);
                     accumulator_imm_o =     4*bit_count(16'(instruction_i[7:0]));
                     reg_file_data_source_o = FROM_ALU;
                 end
