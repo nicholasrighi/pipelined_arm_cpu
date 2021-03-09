@@ -374,7 +374,7 @@ module cpu_controller(
                             reg_file_addr_o =        one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter));
                         end
                         else begin
-                            pipeline_ctrl_signal_o = pop_stall_counter < 2'd2;
+                            pipeline_ctrl_signal_o = stall_pipeline_sig'(pop_stall_counter < 2'd2);
                             case(pop_stall_counter) 
                                 // check if we're loading the PC; if so, we need to branch to the new PC value.
                                 2'd0: begin
