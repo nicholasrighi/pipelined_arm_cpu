@@ -106,7 +106,7 @@ module branch_controller(
 
     always_ff @(posedge clk_i) begin
         if (reset_i)
-            stored_branch_link <= NO_TAKE_BRANCH;
+            stored_branch_link <= NO_STORE_BRANCH;
         else 
             stored_branch_link <= next_branch_link;
     end

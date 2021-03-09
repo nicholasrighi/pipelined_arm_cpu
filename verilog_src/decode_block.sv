@@ -103,7 +103,7 @@ module decode_block(
 
                // If we decide that we're branching during the WB stage, then we need to flush the instructions currently in the 
                // fetch stage
-               branch_from_wb_to_reg =  is_valid_i & branch_from_wb_internal;
+               branch_from_wb_to_reg =  branch_from_wb'(is_valid_i & branch_from_wb_internal);
                pipeline_ctrl_sig_o = (is_valid_i & (stall_pipeline_hazard_internal | stall_pipeline_controller_internal));
 
                if (reg_file_addr_2_source_internal == ADDR_FROM_INSTRUCTION)

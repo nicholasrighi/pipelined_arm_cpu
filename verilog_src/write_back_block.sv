@@ -19,7 +19,7 @@ module write_back_block(
         always_comb begin
 
             program_counter_o = mem_data_i;
-            branch_from_wb_o =  branch_from_wb_i & is_valid_i;
+            branch_from_wb_o =  branch_from_wb'(branch_from_wb_i & is_valid_i);
 
             reg_dest_addr_o =       reg_dest_addr_i;
             // need to AND write_en with is_valid to ensure that we only write data when the signals are valid
