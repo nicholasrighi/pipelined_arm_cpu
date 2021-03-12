@@ -387,10 +387,10 @@ module cpu_controller(
                                     next_pop_stall_counter = 2'd1;
                                 end
                                 // now we need to update the SP. We need to increment the SP by 4*bit_count of 
-                                // reg list, incremented by 1 if we're popping the PC off the stack. We now write this back 
-                                // to the reg file, so we need write_en to be on
+                                // reg list, incremented by 1 if we're popping the PC off the stack.
                                 2'd1: begin
                                     reg_write_en_o =            REG_WRITE;
+                                    // instruction[8:0] is the reg list + the bit indicating if we're popping the PC
                                     accumulator_imm_o =         4*bit_count(HALF_WORD'(instruction_i[8:0]));
                                     next_pop_stall_counter =    2'd2;
                                 end                                 

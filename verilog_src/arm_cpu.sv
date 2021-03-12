@@ -96,8 +96,6 @@ module arm_cpu(
 
     always_comb begin
 
-        data_o = mem_data_MEM_TO_WB;
-
         final_flush_signal = flush_pipeline_FROM_EXE | branch_from_wb_WB_TO_PC;
 
         // this logic determines if we're writing to instruction mem (done during startup) 
@@ -106,6 +104,15 @@ module arm_cpu(
             instruction_fetch_addr_internal = instruction_addr_i;
         else
             instruction_fetch_addr_internal = pc_PC_TO_FETCH;
+    end
+
+    // if writing to register 0 put that data onto the data out line from the cpu so we can 
+    // see the data in the waveform viewer
+    always_ff @(posedge Clock) begin
+        if (Reset)
+            data_o <= '0;
+        else if (reg_file_write_en_WB_TO_DECODE == REG_WRITE && reg_dest_addr_WB_TO_DECODE == 4'b0)
+            data_o <= reg_data_WB_TO_DECODE;
     end
 
     program_counter pc_module(
