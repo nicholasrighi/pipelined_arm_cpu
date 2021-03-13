@@ -28,14 +28,29 @@ module instruction_mem(
             next_instruction_addr = instruction_addr_i;
     end
 
-    instruction_ram ram(
-                        .clk_i(clk_i),
-                        .write_en_i(program_mem_write_en_i),
-                        .instruction_addr_i(next_instruction_addr),
-                        .data_i(instruction_i),
+    `ifdef SYN
+       RAM_16B_512_AR1_LP ram(
+                                .CLK(clk_i),
+                                .WEN(~program_mem_write_en_i),
+                                .CEN(1'b0),
+                                .A(next_instruction_addr[8:0]),
+                                .D(instruction_i),
+                                .Q(instruction_o),
+                                .EMA(3'b000),
+                                .EMAW(2'b00),
+                                .EMAS(1'b0),
+                                .RET1in(1'b1)
+                            ); 
+    `else 
+        instruction_ram ram(
+                            .clk_i(clk_i),
+                            .write_en_i(program_mem_write_en_i),
+                            .instruction_addr_i(next_instruction_addr),
+                            .data_i(instruction_i),
 
-                        .instruction_o(instruction_o)
-                        );
+                            .instruction_o(instruction_o)
+                            );
+    `endif
 
     always_ff @(posedge clk_i) begin
         if (reset_i)

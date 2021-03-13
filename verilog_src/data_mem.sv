@@ -178,7 +178,6 @@ module data_mem(
 
         // Data writing logic
         if (mem_write_en) begin
-            $display("writing %x at addr = %d", mem_data_in, mem_addr);
             if (max_size == 2'd0) begin
                 mem_write_en_1 = 1'b1;
             end else if (max_size == 2'd1) begin
@@ -210,40 +209,91 @@ module data_mem(
         end
     end
 
-    // Ram modules each handling 8 bits / 2 bytes
-    // data_ram_1 handles the 8'h______xx bytes and data_ram_4 handles the 8'hxx______ bytes.
-    ram data_ram_1 (
-        .CLK(clk),
-        .WEN(mem_write_en_1),
-        //.CEN(),
-        .A(mem_addr),
-        .D(data_write_internal_1),
-        .Q(data_read_internal_1)
-    );
-    ram data_ram_2 (
-        .CLK(clk),
-        .WEN(mem_write_en_2),
-        //.CEN(),
-        .A(mem_addr),
-        .D(data_write_internal_2),
-        .Q(data_read_internal_2)
-    );
-    ram data_ram_3 (
-        .CLK(clk),
-        .WEN(mem_write_en_3),
-        //.CEN(),
-        .A(mem_addr),
-        .D(data_write_internal_3),
-        .Q(data_read_internal_3)
-    );
-    ram data_ram_4 (
-        .CLK(clk),
-        .WEN(mem_write_en_4),
-        //.CEN(),
-        .A(mem_addr),
-        .D(data_write_internal_4),
-        .Q(data_read_internal_4)
-    );
+    `ifdef SYN
+        RAM_8B_2048_AR2_LP data_ram_1 (
+                .CLK(clk),
+                .WEN(~mem_write_en_1),
+                .CEN(1'b0),
+                .A(mem_addr[10:0]),
+                .D(data_write_internal_1),
+                .Q(data_read_internal_1),
+                .EMA(3'b000),
+                .EMAW(2'b00),
+                .EMAS(1'b0),
+                .RET1N(1'b1)
+            );
+            RAM_8B_2048_AR2_LP data_ram_2 (
+                .CLK(clk),
+                .WEN(~mem_write_en_2),
+                .CEN(1'b0),
+                .A(mem_addr[10:0]),
+                .D(data_write_internal_2),
+                .Q(data_read_internal_2),
+                .EMA(3'b000),
+                .EMAW(2'b00),
+                .EMAS(1'b0),
+                .RET1N(1'b1)
+            );
+            RAM_8B_2048_AR2_LP data_ram_3 (
+                .CLK(clk),
+                .WEN(~mem_write_en_3),
+                .CEN(1'b0),
+                .A(mem_addr[10:0]),
+                .D(data_write_internal_3),
+                .Q(data_read_internal_3),
+                .EMA(3'b000),
+                .EMAW(2'b00),
+                .EMAS(1'b0),
+                .RET1N(1'b1)
+            );
+            RAM_8B_2048_AR2_LP data_ram_4 (
+                .CLK(clk),
+                .WEN(~mem_write_en_4),
+                .CEN(1'b0),
+                .A(mem_addr[10:0]),
+                .D(data_write_internal_4),
+                .Q(data_read_internal_4),
+                .EMA(3'b000),
+                .EMAW(2'b00),
+                .EMAS(1'b0),
+                .RET1N(1'b1)
+            );
+    `else
+        // Ram modules each handling 8 bits / 2 bytes
+        // data_ram_1 handles the 8'h______xx bytes and data_ram_4 handles the 8'hxx______ bytes.
+        ram data_ram_1 (
+            .CLK(clk),
+            .WEN(mem_write_en_1),
+            //.CEN(),
+            .A(mem_addr),
+            .D(data_write_internal_1),
+            .Q(data_read_internal_1)
+        );
+        ram data_ram_2 (
+            .CLK(clk),
+            .WEN(mem_write_en_2),
+            //.CEN(),
+            .A(mem_addr),
+            .D(data_write_internal_2),
+            .Q(data_read_internal_2)
+        );
+        ram data_ram_3 (
+            .CLK(clk),
+            .WEN(mem_write_en_3),
+            //.CEN(),
+            .A(mem_addr),
+            .D(data_write_internal_3),
+            .Q(data_read_internal_3)
+        );
+        ram data_ram_4 (
+            .CLK(clk),
+            .WEN(mem_write_en_4),
+            //.CEN(),
+            .A(mem_addr),
+            .D(data_write_internal_4),
+            .Q(data_read_internal_4)
+        );
+    `endif
 	 
     always_ff @(posedge clk) begin
         stored_max_size     <= max_size;

@@ -32,6 +32,8 @@ module imm_gen(
         stored_immediate  = stored_instruction[9:0];
         S  =                stored_instruction[10];
 
+        immediate_value_o = 'x;
+
         casez(op)
             SHIFT_IMM: begin
                 casez(instruction_i[13:9])
