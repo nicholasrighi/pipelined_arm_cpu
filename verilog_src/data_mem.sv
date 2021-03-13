@@ -209,7 +209,7 @@ module data_mem(
         end
     end
 
-    `ifdef SYN
+    `ifdef DC
         RAM_8B_2048_AR2_LP data_ram_1 (
                 .CLK(clk),
                 .WEN(~mem_write_en_1),

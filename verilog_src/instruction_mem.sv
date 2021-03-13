@@ -28,7 +28,7 @@ module instruction_mem(
             next_instruction_addr = instruction_addr_i;
     end
 
-    `ifdef SYN
+    `ifdef DC
        RAM_16B_512_AR1_LP ram(
                                 .CLK(clk_i),
                                 .WEN(~program_mem_write_en_i),
