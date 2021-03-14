@@ -125,7 +125,6 @@ module execution_datapath(
                                     .program_counter_i(program_counter_i),
                                     .immediate_i(immediate_i),
                                     .reg_data_1_i(final_alu_reg_input_1_data_internal),
-                                    .reg_data_2_i(final_alu_reg_input_2_data_internal),
 
                                     .take_branch_o(take_branch_o),
                                     .flush_pipeline_o(flush_pipeline_o),

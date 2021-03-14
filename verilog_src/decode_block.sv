@@ -43,9 +43,6 @@ module decode_block(
             //////////////////////////////////////
             mem_write_signal        mem_write_en_internal;
             mem_read_signal         mem_read_en_internal;
-            // verilator lint_off UNUSED
-            is_valid_sig            is_valid_from_controller_internal;
-            // verilator lint_on UNUSED
             reg_file_write_sig      reg_file_write_en_internal;
             reg_file_data_source    reg_file_data_source_internal;   
             alu_input_source        alu_input_1_select_internal;
@@ -89,17 +86,8 @@ module decode_block(
             //    INTERNAL ONLY LOGIC SIGNALS   //
             //////////////////////////////////////
             branch_from_wb    branch_from_wb_to_reg;
-            // verilator lint_off UNUSED
-            //is_valid_sig   final_is_valid_internal;
-            // verilator lint_on UNUSED
 
             always_comb begin
-
-               // if the current values being evaluated aren't valid, then the controller and hazard detectors 
-               // stall_pipeline signals aren't relevant. We always need to AND the is_valid_i signal with any control logic that 
-               // is used 
-               // TODO: This flag is for detecting invalid instructions. Not sure if we need to do this, but could be useful later
-               //final_is_valid_internal = is_valid_i & is_valid_from_controller_internal & stall_pipeline_hazard_internal;
 
                // If we decide that we're branching during the WB stage, then we need to flush the instructions currently in the 
                // fetch stage
@@ -135,7 +123,6 @@ module decode_block(
 
                                         .mem_write_en_o(mem_write_en_internal),
                                         .mem_read_en_o(mem_read_en_internal),
-                                        .is_valid_o(is_valid_from_controller_internal),
                                         .reg_write_en_o(reg_file_write_en_internal),
                                         .reg_file_data_source_o(reg_file_data_source_internal),
                                         .alu_input_1_select_o(alu_input_1_select_internal),

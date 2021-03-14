@@ -19,10 +19,10 @@ module clocked_reg_file(
     // signals used to forward data from write back stage to execution stage if 
     // reading from the register that was written to
     logic stored_write_en;
-    logic [3:0] stored_write_addr;
-    logic [3:0] stored_read_1_addr;
-    logic [3:0] stored_read_2_addr;
-    logic [3:0] stored_read_3_addr;
+    logic [ADDR_WIDTH-1:0] stored_write_addr;
+    logic [ADDR_WIDTH-1:0] stored_read_1_addr;
+    logic [ADDR_WIDTH-1:0] stored_read_2_addr;
+    logic [ADDR_WIDTH-1:0] stored_read_3_addr;
     logic [WORD-1:0] stored_read_1_data;
     logic [WORD-1:0] stored_read_2_data;
     logic [WORD-1:0] stored_read_3_data;

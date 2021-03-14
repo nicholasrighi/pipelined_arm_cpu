@@ -10,10 +10,6 @@ module branch_controller(
                             // verilator lint_on UNUSED
                             input logic [WORD-1:0]      program_counter_i,
                             input logic [WORD-1:0]      reg_data_1_i,
-                            // verilator lint_off UNUSED
-                            // TODO: remove reg_data_1 from branch controller, not needed
-                            input logic [WORD-1:0]      reg_data_2_i,
-                            // verilator lint_on UNUSED
                             input logic [WORD-1:0]      immediate_i,
 
                             output take_branch_ctrl_sig take_branch_o,
