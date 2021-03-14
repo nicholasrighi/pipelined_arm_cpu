@@ -39,7 +39,7 @@ module instruction_mem(
                                 .EMA(3'b000),
                                 .EMAW(2'b00),
                                 .EMAS(1'b0),
-                                .RET1n(1'b1)
+                                .RET1N(1'b1)
                             ); 
     `else 
         instruction_ram ram(
