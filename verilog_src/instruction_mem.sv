@@ -61,7 +61,7 @@ module instruction_mem(
             is_valid_o  <= is_valid_i;
 
         if (reset_i)
-            program_counter_o  <= 'x;
+            program_counter_o  <= 32'b0;
         else
             program_counter_o  <= next_instruction_addr;
     end

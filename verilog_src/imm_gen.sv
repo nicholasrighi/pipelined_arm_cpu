@@ -32,7 +32,7 @@ module imm_gen(
         stored_immediate  = stored_instruction[9:0];
         S  =                stored_instruction[10];
 
-        immediate_value_o = 'x;
+        immediate_value_o = 32'b0;
 
         casez(op)
             SHIFT_IMM: begin
@@ -43,13 +43,13 @@ module imm_gen(
                     ADD_3_IMM, SUB_3_IMM: immediate_value_o = 32'(instruction_i[8:6]);
                     ADD_8_IMM, SUB_8_IMM, 
                     MOV_8_IMM, CMP_8_IMM: immediate_value_o = 32'(instruction_i[7:0]);
-                    default: immediate_value_o = 'x;
+                    default: ;
                 endcase    
             end
             DATA_PROCESSING: begin
                 casez(instruction_i[9:6])
                     REVERSE_SUB: immediate_value_o = 32'b0;
-                    default: immediate_value_o = 'x;
+                    default: ;
                 endcase
             end
             // the +4 offset is to account for the fact that the PC is the current instruction addr, and it 
@@ -64,7 +64,7 @@ module imm_gen(
             MIS_16_BIT: begin
                 casez(instruction_i[11:5])
                     ADD_IMM_SP, SUB_IMM_SP: immediate_value_o = 32'({instruction_i[6:0], 2'b0});
-                    default:    immediate_value_o = 'x;
+                    default: ;
                 endcase
             end
             COND_BRANCH:        immediate_value_o = 32'(signed'( {instruction_i[7:0],1'b0} ));
@@ -77,7 +77,7 @@ module imm_gen(
                 // current half value is halfway inside the current instruction, when in reality it should be at the beginning of the entire
                 // instruction
                 immediate_value_o = 32'(signed'({S, ~(J_1 ^ S), ~(J_2 ^ S), stored_immediate, current_immediate, 1'b0})) - HALFWORD_OFFSET;
-            default: immediate_value_o = 32'bx;
+            default: ;
         endcase
     end
 
