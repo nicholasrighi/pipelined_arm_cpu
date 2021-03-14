@@ -155,11 +155,11 @@ module cpu_controller(
         alu_input_2_select_o =      FROM_REG;
         alu_control_signal_o =      ALU_ADD;
         pipeline_ctrl_signal_o =    NO_STALL_PIPELINE;
-        accumulator_imm_o =         'x;
-        reg_file_addr_o =           'x;
+        accumulator_imm_o =         '0;
+        reg_file_addr_o =           '0;
         reg_file_addr_2_source_o =  ADDR_FROM_INSTRUCTION;
         reg_dest_addr_source_o  =   ADDR_FROM_INSTRUCTION;
-        new_sp_offset =             'x;
+        new_sp_offset =             '0;
         reg_2_reg_3_select_sig_o =  SELECT_REG_2;
         reverse_order_hold_counter = NO_REV_LOAD_COUNTER;
         branch_from_wb_o =          NO_BRANCH_FROM_WB;
