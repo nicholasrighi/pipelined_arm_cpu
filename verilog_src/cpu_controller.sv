@@ -431,7 +431,7 @@ module cpu_controller(
                 reg_file_data_source_o =    FROM_MEMORY;
                 reverse_order_hold_counter = REV_LOAD_COUNTER;
                 reg_list_from_instruction = 16'(instruction_i[7:0]);
-                new_sp_offset =             4*(bit_count(16'(instruction_i[7:0])) - 1'b1);
+                new_sp_offset =             5'(32'(4*(bit_count(16'(instruction_i[7:0]))) - 1'b1));
                 pipeline_ctrl_signal_o =    stall_pipeline_sig'(bit_count(reg_list_from_instruction & hold_counter) != 5'b0);
                 accumulator_imm_o =         32'(new_sp_offset)-4*accumulator;
                 reg_dest_addr_source_o =    ADDR_FROM_CTRL_UNIT;
