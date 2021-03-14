@@ -92,7 +92,7 @@ module arm_cpu(
     //////////////////////////////////////
     //      MISC CONTROL SIGNALS        //
     //////////////////////////////////////
-    logic final_flush_signal;
+    flush_pipeline_sig final_flush_signal;
 
     always_comb begin
 
