@@ -16,7 +16,7 @@ module execution_memory_register(
                                 output logic                 is_valid_o,
                                 output mem_write_signal      mem_write_en_o,
                                 output reg_file_write_sig    reg_file_write_en_o,
-                                output take_branch_ctrl_sig  branch_from_wb_o,
+                                output branch_from_wb        branch_from_wb_o,
                                 output logic [6:0]           opA_opB_o,
                                 output reg_file_data_source  reg_file_data_source_o,
                                 output logic [ADDR_WIDTH-1:0] reg_dest_addr_o,
