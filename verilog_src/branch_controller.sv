@@ -83,7 +83,7 @@ module branch_controller(
             TWO_WORD_INST_1,
             TWO_WORD_INST_2,
             TWO_WORD_INST_3: begin
-               if (stored_branch_link == TAKE_BRANCH) begin
+               if (stored_branch_link == STORE_BRANCH) begin
                    take_branch_internal = TAKE_BRANCH;
                    program_counter_o =    program_counter_i + immediate_i;
                    next_branch_link =     NO_STORE_BRANCH;
