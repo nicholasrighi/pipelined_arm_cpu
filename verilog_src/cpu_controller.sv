@@ -45,10 +45,10 @@ function automatic [HALF_WORD-1:0] reverse_priority_decode(
 
 endfunction
 
-function automatic [15:0] priority_decode(
-                                            input logic [15:0] reg_list
+function automatic [HALF_WORD-1:0] priority_decode(
+                                            input logic [HALF_WORD-1:0] reg_list
                                         );
-        logic [15:0] decoder_signal;
+        logic [HALF_WORD-1:0] decoder_signal;
         casez(reg_list)
             16'b????_????_????_???1:    decoder_signal = 16'b1;
             16'b????_????_????_??10:    decoder_signal = 16'b10;
@@ -142,7 +142,7 @@ module cpu_controller(
         // extract signals from instruction
         shift_code_internal =           instruction_i[13:9];
         data_processing_code_internal = instruction_i[9:6];
-        reg_list_from_instruction =     'x;
+        reg_list_from_instruction =     '0;
 
         // set defaults for output signals
         next_branch_link =          NO_STORE_BRANCH;
