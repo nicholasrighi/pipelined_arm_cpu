@@ -10,10 +10,10 @@ module reg_addr_decoder(
                         );
 
     always_comb begin
-        reg_addr_1_o =      'x;
-        reg_addr_2_o =      'x;
-        reg_addr_3_o =      'x;
-        reg_dest_addr_o =   'x;
+        reg_addr_1_o =      4'b0;
+        reg_addr_2_o =      4'b0;
+        reg_addr_3_o =      4'b0;
+        reg_dest_addr_o =   4'b0;
         casez (instruction_i.op)
             SHIFT_IMM: begin
                casez (instruction_i[13:9])
