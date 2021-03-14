@@ -96,7 +96,7 @@ module arm_cpu(
 
     always_comb begin
 
-        final_flush_signal = flush_pipeline_FROM_EXE | branch_from_wb_WB_TO_PC;
+        final_flush_signal = flush_pipeline_sig'(flush_pipeline_FROM_EXE | branch_from_wb_WB_TO_PC);
 
         // this logic determines if we're writing to instruction mem (done during startup) 
         // reading instructions during program execution (done after startup)
