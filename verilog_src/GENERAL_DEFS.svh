@@ -6,9 +6,9 @@
 	parameter HALF_WORD 	= 16;
 	parameter BYTE			= 8;
 	parameter ADDR_WIDTH 	= 4;
-	parameter SP_REG_NUM	= 13;
-	parameter LR_REG_NUM	= 14;
-	parameter PC_REG_NUM	= 15;
+	parameter SP_REG_NUM	= 4'd13;
+	parameter LR_REG_NUM	= 4'd14;
+	parameter PC_REG_NUM	= 4'd15;
 
 	typedef enum logic [5:0] {
 		SHIFT_IMM		= 6'b00????,

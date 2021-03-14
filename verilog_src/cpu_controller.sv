@@ -80,7 +80,7 @@ function automatic [4:0] bit_count(
     logic [4:0] sum = '0;
     for (integer i = 0; i < HALF_WORD; i++) begin
         if (data_in[i])
-            sum += 1; 
+            sum += 5'd1; 
     end
     return sum;
 endfunction
@@ -337,7 +337,7 @@ module cpu_controller(
 
                         alu_control_signal_o =      ALU_SUB;
                         reg_list_from_instruction = 16'({instruction_i[8],6'b0,instruction_i[7:0]});
-                        new_sp_offset =             4*bit_count(reg_list_from_instruction);
+                        new_sp_offset =             5'(4*bit_count(reg_list_from_instruction));
                         pipeline_ctrl_signal_o =    stall_pipeline_sig'(bit_count(reg_list_from_instruction & hold_counter) != 5'b0);
                         accumulator_imm_o =         32'(new_sp_offset)- 4*accumulator;
                         reg_file_addr_2_source_o =  ADDR_FROM_CTRL_UNIT;
@@ -484,7 +484,7 @@ module cpu_controller(
 
     // logic for updating accumulator
     always_ff @(posedge clk_i)begin
-        if (reset_i | (pipeline_ctrl_signal_o == NO_FLUSH_PIPELINE) | ~is_valid_i) 
+        if (reset_i | (pipeline_ctrl_signal_o == NO_STALL_PIPELINE) | ~is_valid_i) 
             accumulator <= 5'b0;
         else
             accumulator <= accumulator + 1'b1;
@@ -492,7 +492,7 @@ module cpu_controller(
 
     // logic for updating hold counter
     always_ff @(posedge clk_i) begin
-        if (reset_i | (pipeline_ctrl_signal_o == NO_FLUSH_PIPELINE) | ~is_valid_i)
+        if (reset_i | (pipeline_ctrl_signal_o == NO_STALL_PIPELINE) | ~is_valid_i)
             hold_counter <= FULL_REG_LIST;
         else if (reverse_order_hold_counter == NO_REV_LOAD_COUNTER)
             // AND'ing the reg list and hold counter ensures that the bit corresponding to the lowest 
@@ -504,7 +504,7 @@ module cpu_controller(
 
     // logic for updating mult_load_store_base_reg status signal
     always_ff @(posedge clk_i) begin
-        if (reset_i | (pipeline_ctrl_signal_o == NO_FLUSH_PIPELINE) | ~is_valid_i) 
+        if (reset_i | (pipeline_ctrl_signal_o == NO_STALL_PIPELINE) | ~is_valid_i) 
             base_reg_in_list_status_sig <= BASE_REG_NOT_IN_LIST;
         else if (base_reg_in_list_status_sig == BASE_REG_NOT_IN_LIST) begin
             if (one_hot_to_bin(priority_decode(reg_list_from_instruction & hold_counter)) == 4'(instruction_i[10:8]))

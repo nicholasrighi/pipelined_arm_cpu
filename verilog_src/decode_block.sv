@@ -162,12 +162,10 @@ module decode_block(
                                        .read_addr_3_i(reg_addr_3_from_addr_decoder),
                                        .write_addr_i(reg_dest_addr_i),
                                        .reg_data_i(reg_data_i),
-                                       .program_counter_i(program_counter_i),
 
                                        .reg_data_1_o(reg_1_data_o),
                                        .reg_data_2_o(reg_2_data_o),
-                                       .reg_data_3_o(reg_3_data_o),
-                                       .program_counter_o(program_counter_o)
+                                       .reg_data_3_o(reg_3_data_o)
             );
 
             decode_execution_register decode_exe_reg(

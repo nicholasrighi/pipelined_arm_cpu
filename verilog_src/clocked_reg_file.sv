@@ -8,12 +8,10 @@ module clocked_reg_file(
                             input logic [ADDR_WIDTH-1:0]    read_addr_3_i,
                             input logic [ADDR_WIDTH-1:0]    write_addr_i,
                             input logic [WORD-1:0]          reg_data_i,
-                            input logic [WORD-1:0]          program_counter_i,
 
                             output logic [WORD-1:0]         reg_data_1_o,
                             output logic [WORD-1:0]         reg_data_2_o,
-                            output logic [WORD-1:0]         reg_data_3_o,
-                            output logic [WORD-1:0]         program_counter_o
+                            output logic [WORD-1:0]         reg_data_3_o
                         );
 
     // signals used to forward data from write back stage to execution stage if 
@@ -57,7 +55,6 @@ module clocked_reg_file(
                             );
 
     always_ff @(posedge clk_i) begin
-        program_counter_o <= program_counter_i;
         // store forwarding data
         stored_write_en     <= write_en_i;
         stored_write_addr   <= write_addr_i;
