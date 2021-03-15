@@ -33,7 +33,7 @@ module instruction_mem(
                                 .CLK(clk_i),
                                 .WEN(~program_mem_write_en_i),
                                 .CEN(1'b0),
-                                .A(next_instruction_addr[8:0]/2),
+                                .A((next_instruction_addr[9:0]/2),
                                 .D(instruction_i),
                                 .Q(instruction_o),
                                 .EMA(3'b010),
