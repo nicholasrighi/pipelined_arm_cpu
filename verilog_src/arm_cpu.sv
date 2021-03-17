@@ -150,8 +150,9 @@ module arm_cpu(
                         .flush_pipeline_i(final_flush_signal),
                         // the mem_read signal that leaves the decode block is the 
                         // signal that we want to read to determine if the instruction
-                        // in the EXE stage is a load
-                        .mem_read_EXE_i(mem_read_en_DECODE_TO_EXE),
+                        // in the EXE stage is a load. So we simply AND the mem_read signal from decode
+                        // with the is_valid signal from decode to determine if the EXE stage is reading
+                        .mem_read_EXE_i(mem_read_signal'(mem_read_en_DECODE_TO_EXE & is_valid_DECODE_TO_EXE)),
                         .mem_reg_dest_addr_i(reg_dest_addr_DECODE_TO_EXE),
                         .reg_file_write_en_i(reg_file_write_en_WB_TO_DECODE),
                         .reg_data_i(reg_data_WB_TO_DECODE),
