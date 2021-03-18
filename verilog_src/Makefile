@@ -1,4 +1,4 @@
-TARGET=arm_cpu
+TARGET=clocked_reg_file
 
 build:
 	sv2v --write=adjacent *.sv
