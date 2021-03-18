@@ -24,8 +24,8 @@ module alu_wrapper(
         logic [WORD-1:0] alu_data_in_2_internal;
 
         always_comb begin
-                alu_data_in_1_internal = 'x;
-                alu_data_in_2_internal = 'x;
+                alu_data_in_1_internal = '0;
+                alu_data_in_2_internal = '0;
                 case (alu_input_1_select_i)
                         FROM_REG:               alu_data_in_1_internal = reg_data_1_i;
                         FROM_IMM:               alu_data_in_1_internal = immediate_i;

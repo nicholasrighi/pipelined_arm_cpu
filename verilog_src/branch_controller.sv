@@ -28,7 +28,7 @@ module branch_controller(
         next_branch_link =  NO_STORE_BRANCH;
 
         take_branch_internal =  NO_TAKE_BRANCH;
-        program_counter_o =     'x;
+        program_counter_o =     '0;
 
         casez(instruction_i.op)
             COND_BRANCH: begin

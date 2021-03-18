@@ -24,7 +24,7 @@ module write_back_block(
             reg_dest_addr_o =       reg_dest_addr_i;
             // need to AND write_en with is_valid to ensure that we only write data when the signals are valid
             reg_file_write_en_o =   reg_file_write_sig'(reg_file_write_en_i & is_valid_i);
-            reg_data_o =            'x;
+            reg_data_o =            '0;
             case(reg_data_ctrl_sig_i)
                 FROM_ALU:           reg_data_o = alu_result_i;
                 FROM_MEMORY:        reg_data_o = mem_data_i;

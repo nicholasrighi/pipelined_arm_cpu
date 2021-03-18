@@ -1,4 +1,4 @@
-TARGET=decode_block
+TARGET=arm_cpu
 
 build:
 	sv2v --write=adjacent *.sv

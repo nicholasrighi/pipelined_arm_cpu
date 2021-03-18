@@ -17,8 +17,8 @@ module alu(
 
     always_comb begin
 
-        alu_result_o = 'x;
-        extended_sum = 'x;
+        alu_result_o = '0;
+        extended_sum = '0;
 
         // data_2_internal is setup this way so we can check for overflow by comparing the sign bits of data_in_1 and 
         // data_2_internal

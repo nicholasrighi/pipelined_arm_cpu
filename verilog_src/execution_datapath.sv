@@ -53,9 +53,9 @@ module execution_datapath(
         logic [WORD-1:0] final_alu_reg_input_3_data_internal;
 
         always_comb begin
-            final_alu_reg_input_1_data_internal = 'x;
-            final_alu_reg_input_2_data_internal = 'x;
-            final_alu_reg_input_3_data_internal = 'x;
+            final_alu_reg_input_1_data_internal = '0;
+            final_alu_reg_input_2_data_internal = '0;
+            final_alu_reg_input_3_data_internal = '0;
 
             case(reg_1_ctrl_sig_internal)
                 FORWARD_FROM_DECODE:    final_alu_reg_input_1_data_internal = reg_data_1_DECODE_i;
