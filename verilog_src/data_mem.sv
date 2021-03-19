@@ -221,7 +221,7 @@ module data_mem(
                 .A(mem_addr[10:0]),
                 .D(data_write_internal_1),
                 .Q(data_read_internal_1),
-                .EMA(3'b000),
+                .EMA(3'b010),
                 .EMAW(2'b00),
                 .EMAS(1'b0),
                 .RET1N(1'b1)
@@ -233,7 +233,7 @@ module data_mem(
                 .A(mem_addr[10:0]),
                 .D(data_write_internal_2),
                 .Q(data_read_internal_2),
-                .EMA(3'b000),
+                .EMA(3'b010),
                 .EMAW(2'b00),
                 .EMAS(1'b0),
                 .RET1N(1'b1)
@@ -245,7 +245,7 @@ module data_mem(
                 .A(mem_addr[10:0]),
                 .D(data_write_internal_3),
                 .Q(data_read_internal_3),
-                .EMA(3'b000),
+                .EMA(3'b010),
                 .EMAW(2'b00),
                 .EMAS(1'b0),
                 .RET1N(1'b1)
@@ -257,7 +257,7 @@ module data_mem(
                 .A(mem_addr[10:0]),
                 .D(data_write_internal_4),
                 .Q(data_read_internal_4),
-                .EMA(3'b000),
+                .EMA(3'b010),
                 .EMAW(2'b00),
                 .EMAS(1'b0),
                 .RET1N(1'b1)
