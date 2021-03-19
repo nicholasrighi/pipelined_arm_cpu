@@ -36,7 +36,7 @@ module instruction_mem(
                                 .A(next_instruction_addr[9:1]),
                                 .D(instruction_i),
                                 .Q(instruction_o),
-                                .EMA(3'b000),
+                                .EMA(3'b010),
                                 .EMAW(2'b00),
                                 .EMAS(1'b0),
                                 .RET1N(1'b1)
