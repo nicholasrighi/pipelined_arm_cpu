@@ -40,9 +40,14 @@ module imm_gen(
                     LEFT_SHIFT_L_IM, 
                     RIGHT_SHIFT_L_IM,    
                     RIGHT_SHIFT_A_IM:     immediate_value_o = 32'(instruction_i[10:6]);
-                    ADD_3_IMM, SUB_3_IMM: immediate_value_o = 32'(instruction_i[8:6]);
-                    ADD_8_IMM, SUB_8_IMM, 
-                    MOV_8_IMM, CMP_8_IMM: immediate_value_o = 32'(instruction_i[7:0]);
+
+                    ADD_3_IMM, 
+                    SUB_3_IMM: immediate_value_o = 32'(instruction_i[8:6]);
+
+                    ADD_8_IMM, 
+                    SUB_8_IMM, 
+                    MOV_8_IMM, 
+                    CMP_8_IMM: immediate_value_o = 32'(instruction_i[7:0]);
                     default: ;
                 endcase    
             end

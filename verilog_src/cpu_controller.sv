@@ -373,9 +373,9 @@ module cpu_controller(
                         end
                         else begin
                             if (pop_stall_counter < 2'd2)
-                                pipeline_ctrl_signal_o = NO_STALL_PIPELINE;
-                            else
                                 pipeline_ctrl_signal_o = STALL_PIPELINE;
+                            else
+                                pipeline_ctrl_signal_o = NO_STALL_PIPELINE;
                             //pipeline_ctrl_signal_o = stall_pipeline_sig'(pop_stall_counter < 2'd2);
                             case(pop_stall_counter) 
                                 // check if we're loading the PC; if so, we need to branch to the new PC value.

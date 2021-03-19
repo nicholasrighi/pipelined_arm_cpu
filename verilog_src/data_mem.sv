@@ -207,6 +207,10 @@ module data_mem(
             mem_data_out[23:16] = data_read_internal_3;
             mem_data_out[31:24] = data_read_internal_4;
         end
+        `ifndef DC
+            if(mem_write_en)
+                $display("writing data %x at addr %d", mem_data_in, mem_addr);
+        `endif
     end
 
     `ifdef DC
