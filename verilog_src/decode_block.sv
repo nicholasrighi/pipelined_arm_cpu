@@ -110,6 +110,7 @@ module decode_block(
                                        .dest_addr_reg_EXE_i(mem_reg_dest_addr_i),
                                        .source_reg_1_DECODE_i(reg_addr_1_from_addr_decoder),
                                        .source_reg_2_DECODE_i(final_reg_2_addr_internal),
+                                       .source_reg_3_DECODE_i(reg_addr_3_from_addr_decoder),
                                        
                                        .stall_pipeline_o(stall_pipeline_hazard_internal),
                                        .hazard_detector_invaidate_o(hazard_detector_invaidate_internal)

@@ -21,10 +21,12 @@ module clocked_reg_file(
     logic [ADDR_WIDTH-1:0] stored_read_1_addr;
     logic [ADDR_WIDTH-1:0] stored_read_2_addr;
     logic [ADDR_WIDTH-1:0] stored_read_3_addr;
+    logic [WORD-1:0] stored_write_data;
+
+    // These are from the register file
     logic [WORD-1:0] stored_read_1_data;
     logic [WORD-1:0] stored_read_2_data;
     logic [WORD-1:0] stored_read_3_data;
-    logic [WORD-1:0] stored_write_data;
 
     // determine if we need to output forwarded data or old data
     always_comb begin
