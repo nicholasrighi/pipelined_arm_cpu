@@ -1,0 +1,50 @@
+
+test:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	21fa      	movs	r1, #250	; 0xfa
+   2:	21fa      	movs	r1, #250	; 0xfa
+   4:	31fa      	adds	r1, #250	; 0xfa
+   6:	468d      	mov	sp, r1
+   8:	f000 f81d 	bl	46 <main>
+   c:	e7ff      	b.n	e <stall_loop>
+
+0000000e <stall_loop>:
+   e:	266f      	movs	r6, #111	; 0x6f
+  10:	e7fd      	b.n	e <stall_loop>
+
+00000012 <fib_iter>:
+  12:	b510      	push	{r4, lr}
+  14:	1e04      	subs	r4, r0, #0
+  16:	dd0a      	ble.n	2e <fib_iter+0x1c>
+  18:	2200      	movs	r2, #0
+  1a:	2301      	movs	r3, #1
+  1c:	2000      	movs	r0, #0
+  1e:	e000      	b.n	22 <fib_iter+0x10>
+  20:	0008      	movs	r0, r1
+  22:	0019      	movs	r1, r3
+  24:	181b      	adds	r3, r3, r0
+  26:	3201      	adds	r2, #1
+  28:	4294      	cmp	r4, r2
+  2a:	d1f9      	bne.n	20 <fib_iter+0xe>
+  2c:	bd10      	pop	{r4, pc}
+  2e:	2000      	movs	r0, #0
+  30:	e7fc      	b.n	2c <fib_iter+0x1a>
+
+00000032 <fact>:
+  32:	b510      	push	{r4, lr}
+  34:	0004      	movs	r4, r0
+  36:	2001      	movs	r0, #1
+  38:	2c01      	cmp	r4, #1
+  3a:	dd03      	ble.n	44 <fact+0x12>
+  3c:	1e60      	subs	r0, r4, #1
+  3e:	f7ff fff8 	bl	32 <fact>
+  42:	4360      	muls	r0, r4
+  44:	bd10      	pop	{r4, pc}
+
+00000046 <main>:
+  46:	2004      	movs	r0, #4
+  48:	4770      	bx	lr
