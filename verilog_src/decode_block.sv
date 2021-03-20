@@ -86,6 +86,7 @@ module decode_block(
             //    INTERNAL ONLY LOGIC SIGNALS   //
             //////////////////////////////////////
             branch_from_wb    branch_from_wb_to_reg;
+            update_flag_sig   update_flag_final;
 
             always_comb begin
 
@@ -93,6 +94,9 @@ module decode_block(
                // fetch stage
                branch_from_wb_to_reg =  branch_from_wb'(is_valid_i & branch_from_wb_internal);
                pipeline_ctrl_sig_o = stall_pipeline_sig'(is_valid_i & (stall_pipeline_hazard_internal | stall_pipeline_controller_internal));
+               // we don't need to prevent updating the flag if the internal pipeline stall signal is high, since if the controller is stalling
+               // then it will correctly determine the update flag condition
+               update_flag_final = update_flag_sig'(update_flag_internal & ~stall_pipeline_hazard_internal);
 
                if (reg_file_addr_2_source_internal == ADDR_FROM_INSTRUCTION)
                   final_reg_2_addr_internal = reg_addr_2_from_addr_decoder;
@@ -179,7 +183,7 @@ module decode_block(
                                         .alu_input_1_select_i(alu_input_1_select_internal),
                                         .alu_input_2_select_i(alu_input_2_select_internal),
                                         .alu_control_signal_i(alu_control_signal_internal),
-                                        .update_flag_i(update_flag_internal),
+                                        .update_flag_i(update_flag_final),
                                         .hazard_detector_invaidate_i(hazard_detector_invaidate_internal),
                                         .is_valid_i(is_valid_i),
                                         .branch_from_wb_i(branch_from_wb_to_reg),
